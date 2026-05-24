@@ -36,6 +36,15 @@ const ProtectedRoute = ({ children, isChangePasswordRoute = false }: { children:
   return <>{children}</>;
 };
 
+import { AppLayout } from "@/components/AppLayout";
+import { Outlet } from "react-router-dom";
+
+const LayoutWrapper = () => (
+  <AppLayout>
+    <Outlet />
+  </AppLayout>
+);
+
 const AppRoutes = () => {
   const { isAuthenticated, isLoading } = useAuth();
   
@@ -47,16 +56,21 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <Login />} />
       <Route path="/change-password" element={<ProtectedRoute isChangePasswordRoute={true}><ChangePassword /></ProtectedRoute>} />
-      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-      <Route path="/students" element={<ProtectedRoute><Students /></ProtectedRoute>} />
-      <Route path="/students/:id" element={<ProtectedRoute><StudentProfile /></ProtectedRoute>} />
-      <Route path="/attendance" element={<ProtectedRoute><Attendance /></ProtectedRoute>} />
-      <Route path="/categories" element={<ProtectedRoute><Categories /></ProtectedRoute>} />
-      <Route path="/my-attendance" element={<ProtectedRoute><StudentProfile /></ProtectedRoute>} />
-      <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-      <Route path="/corrections" element={<ProtectedRoute><Corrections /></ProtectedRoute>} />
-      <Route path="/timetable" element={<ProtectedRoute><Timetable /></ProtectedRoute>} />
-      <Route path="/notifications" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      
+      {/* Global AppLayout Wrapper for Protected Page Routes */}
+      <Route element={<ProtectedRoute><LayoutWrapper /></ProtectedRoute>}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/students" element={<Students />} />
+        <Route path="/students/:id" element={<StudentProfile />} />
+        <Route path="/attendance" element={<Attendance />} />
+        <Route path="/categories" element={<Categories />} />
+        <Route path="/my-attendance" element={<StudentProfile />} />
+        <Route path="/reports" element={<Reports />} />
+        <Route path="/corrections" element={<Corrections />} />
+        <Route path="/timetable" element={<Timetable />} />
+        <Route path="/notifications" element={<Dashboard />} />
+      </Route>
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

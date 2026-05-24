@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
 import api from "@/lib/api";
 import { Search, Filter, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -67,7 +66,7 @@ const Students = () => {
   });
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6 bg-gradient-to-r from-sidebar-accent/10 to-transparent p-6 rounded-2xl border border-border/50 flex justify-between items-center relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-[80px] pointer-events-none" />
         <div className="relative z-10">
@@ -203,7 +202,7 @@ const Students = () => {
           </div>
         </div>
       )}
-    </AppLayout>
+    </>
   );
 };
 

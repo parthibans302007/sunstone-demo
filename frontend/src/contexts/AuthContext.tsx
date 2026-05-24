@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return true;
     } catch (error) {
       console.error("Login Error", error);
-      return false;
+      throw error;
     }
   };
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { AppLayout } from "@/components/AppLayout";
 import { StatCard } from "@/components/StatCard";
+import { cn } from "@/lib/utils";
 import { Users, ClipboardCheck, AlertTriangle, TrendingUp, BookOpen, UserCheck } from "lucide-react";
 import api from "@/lib/api";
 import { socket } from "@/lib/socket";
@@ -175,21 +175,138 @@ const AdminFacultyDashboard = () => {
 };
 
 const StudentDashboard = () => {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStudentData = async () => {
+      try {
+        const res = await api.get("/reports");
+        if (res.data && res.data.students && res.data.students.length > 0) {
+          setData(res.data.students[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch student dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStudentData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <StatCard title="Overall Attendance" value="Loading..." icon={ClipboardCheck} variant="warning" />
+        <StatCard title="GPA" value="Loading..." icon={TrendingUp} />
+        <StatCard title="Backlogs" value="Loading..." icon={AlertTriangle} />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="glass-card p-8 text-center text-muted-foreground rounded-xl">
+        Failed to load student profile. Please verify your student profile is set up.
+      </div>
+    );
+  }
+
+  const attendancePct = data.attendancePercentage;
+  const isAtRisk = attendancePct < 75;
+
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <StatCard title="Overall Attendance" value="Loading..." icon={ClipboardCheck} variant={"warning"} />
-        <StatCard title="Class Rank" value="--" icon={TrendingUp} subtitle="Not enough data" />
-        <StatCard title="Subjects" value="--" icon={BookOpen} subtitle="Currently enrolled" />
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+        <StatCard
+          title="Overall Attendance"
+          value={`${attendancePct}%`}
+          icon={ClipboardCheck}
+          subtitle={isAtRisk ? "Below threshold (75%)" : "Good standing"}
+          variant={isAtRisk ? "destructive" : "success"}
+        />
+        <StatCard
+          title="GPA"
+          value={data.gpa}
+          icon={TrendingUp}
+          subtitle={`Semester ${data.semester}`}
+          variant={data.gpa >= 7.0 ? "success" : data.gpa >= 5.0 ? "default" : "destructive"}
+        />
+        <StatCard
+          title="Backlogs"
+          value={data.backlogCount}
+          icon={AlertTriangle}
+          subtitle={data.backlogCount > 0 ? "Needs attention" : "No active backlogs"}
+          variant={data.backlogCount > 0 ? "destructive" : "success"}
+        />
       </div>
 
-      <div className="glass-card p-6 border bg-card/60 rounded-xl shadow-sm">
-        <h3 className="text-sm font-semibold mb-3">AI Insight</h3>
-        <div className="bg-accent/10 border border-accent/20 rounded-md p-4 text-sm">
-          <p className="font-medium text-accent">📊 Real-Time Analytics Booting</p>
-          <p className="mt-1 text-muted-foreground">
-            System is analyzing your recent attendance marks. We will update you shortly.
-          </p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-100">
+        <div className="glass-card p-6 border bg-card/60 rounded-xl shadow-sm">
+          <h3 className="text-sm font-semibold mb-4 text-foreground">Academic Profile Summary</h3>
+          <div className="space-y-3.5 text-sm">
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Roll Number</span>
+              <span className="font-semibold">{data.rollNumber}</span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Course & Batch</span>
+              <span className="font-semibold">{data.course} ({data.batch})</span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Section / Semester</span>
+              <span className="font-semibold">Sec {data.section} / Sem {data.semester}</span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">Fees Status</span>
+              <span className={cn("font-semibold px-2 py-0.5 rounded text-xs", data.feesPaid ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")}>
+                {data.feesPaid ? "Paid" : "Pending"}
+              </span>
+            </div>
+            <div className="flex justify-between border-b pb-2">
+              <span className="text-muted-foreground">No-Dues Status</span>
+              <span className={cn("font-semibold px-2 py-0.5 rounded text-xs", data.noDueStatus ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive")}>
+                {data.noDueStatus ? "Cleared" : "Uncleared"}
+              </span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Internship</span>
+              <span className={cn("font-semibold px-2 py-0.5 rounded text-xs", data.internshipCompleted ? "bg-success/10 text-success" : "bg-warning/10 text-warning")}>
+                {data.internshipCompleted ? "Completed" : "Pending"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-card p-6 border bg-card/60 rounded-xl shadow-sm">
+          <h3 className="text-sm font-semibold mb-4 text-foreground">AI Insight & Suggestions</h3>
+          <div className="space-y-3 text-sm">
+            {isAtRisk && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 text-destructive">
+                ⚠️ Your attendance is at <strong>{attendancePct}%</strong>, which is below the mandatory 75% limit. You might be barred from examinations. Please attend upcoming classes or request a correction if there was a logging error.
+              </div>
+            )}
+            {!isAtRisk && (
+              <div className="bg-success/10 border border-success/20 rounded-md p-3 text-success">
+                ✅ Excellent consistency! Your attendance is at <strong>{attendancePct}%</strong>. Maintain this level of participation.
+              </div>
+            )}
+            {data.backlogCount > 0 && (
+              <div className="bg-warning/10 border border-warning/20 rounded-md p-3 text-warning">
+                📚 You have <strong>{data.backlogCount} active backlog(s)</strong>. Meet with your mentor or faculty coordinator to plan remedial sessions.
+              </div>
+            )}
+            {data.gpa >= 8.5 && (
+              <div className="bg-primary/10 border border-primary/20 rounded-md p-3 text-primary">
+                🏆 Outstanding performance! With a GPA of <strong>{data.gpa}</strong>, you are in the top tier of your class. Keep up the high standard.
+              </div>
+            )}
+            {!data.feesPaid && (
+              <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3 text-destructive">
+                💳 Tuition fees are pending. Kindly complete payment to prevent registration delays.
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -199,7 +316,7 @@ const StudentDashboard = () => {
 const Dashboard = () => {
   const { user } = useAuth();
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Welcome back, {user?.name?.split(" ")[0]}</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
@@ -207,7 +324,7 @@ const Dashboard = () => {
         </p>
       </div>
       {user?.role === "student" ? <StudentDashboard /> : <AdminFacultyDashboard />}
-    </AppLayout>
+    </>
   );
 };
 

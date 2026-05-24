@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { AppLayout } from "@/components/AppLayout";
 import { mockCorrectionRequests, CorrectionRequest } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ const Corrections = () => {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-xl font-bold">Attendance Corrections</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
@@ -66,7 +65,7 @@ const Corrections = () => {
           </div>
         ))}
       </div>
-    </AppLayout>
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
 const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 const { sendEmail } = require('../utils/emailService');
+const { isAttended } = require('../utils/attendanceHelper');
 
 const dispatchAlerts = async (records, subject, date) => {
     try {
@@ -26,7 +27,7 @@ const dispatchAlerts = async (records, subject, date) => {
                             <p>You have been marked <strong>Absent</strong> for <strong>${subject}</strong> on <strong>${formattedDate}</strong>.</p>
                             <p>If you believe this is a mistake, please reach out to the faculty or submit a correction request through the portal.</p>
                             <br/>
-                            <p>Best regards,<br/>Sunstone Academy Attendance System</p>
+                            <p>Best regards,<br/>Sunstone Management System</p>
                         </div>
                     `
                 });
@@ -40,7 +41,7 @@ const dispatchAlerts = async (records, subject, date) => {
                     const studentRecord = a.records.find(r => r.student.toString() === student._id.toString());
                     if (studentRecord) {
                         totalClasses++;
-                        if (studentRecord.status === 'Present') attendedClasses++;
+                        if (isAttended(studentRecord.status)) attendedClasses++;
                     }
                 });
 
@@ -57,7 +58,7 @@ const dispatchAlerts = async (records, subject, date) => {
                                 <p>Your overall attendance has dropped to <strong>${pct}%</strong>, which is below the required 75% threshold.</p>
                                 <p>Please ensure you attend the upcoming classes to avoid academic penalties.</p>
                                 <br/>
-                                <p>Best regards,<br/>Sunstone Academy Academic Committee</p>
+                                <p>Best regards,<br/>Sunstone Management System Academic Committee</p>
                             </div>
                         `
                     });

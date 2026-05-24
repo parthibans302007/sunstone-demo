@@ -1,4 +1,3 @@
-import { AppLayout } from "@/components/AppLayout";
 import { cn } from "@/lib/utils";
 
 const timetable = [
@@ -23,7 +22,7 @@ const days = ["mon", "tue", "wed", "thu", "fri", "sat"] as const;
 const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const Timetable = () => (
-  <AppLayout>
+  <>
     <div className="mb-6">
       <h1 className="text-xl font-bold">Timetable & Holidays</h1>
       <p className="text-sm text-muted-foreground mt-0.5">CS Department — Year 2 — Semester IV</p>
@@ -74,7 +73,7 @@ const Timetable = () => (
         ))}
       </div>
     </div>
-  </AppLayout>
+  </>
 );
 
 export default Timetable;

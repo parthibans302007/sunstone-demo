@@ -59,7 +59,7 @@ export default function ChangePassword() {
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-foreground">Secure your account</h1>
           <p className="text-muted-foreground mt-2">
-            Welcome to Sunstone Academy! Please change your default password before accessing your dashboard.
+            Welcome to Sunstone Management System! Please change your default password before accessing your dashboard.
           </p>
         </div>
 

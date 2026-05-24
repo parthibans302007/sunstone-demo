@@ -6,12 +6,18 @@ const userSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'faculty', 'student'], default: 'student' },
-    isFirstLogin: { type: Boolean, default: true }
+    isFirstLogin: { type: Boolean, default: true },
+    
+    // Faculty assignments
+    assignedBatches: [{ type: String }],
+    assignedCourses: [{ type: String }],
+    assignedSections: [{ type: String }],
+    assignedSubjects: [{ type: String }]
 }, { timestamps: true });
 
 userSchema.pre('save', async function(next) {
     if (!this.isModified('password')) {
-        next();
+        return next();
     }
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

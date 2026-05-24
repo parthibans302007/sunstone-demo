@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { AppLayout } from "@/components/AppLayout";
 import api from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Check, Save } from "lucide-react";
@@ -93,7 +92,7 @@ const Attendance = () => {
   };
 
   return (
-    <AppLayout>
+    <>
       <div className="mb-6">
         <h1 className="text-xl font-bold">Mark Attendance</h1>
         <p className="text-sm text-muted-foreground mt-0.5">{today}</p>
@@ -169,7 +168,7 @@ const Attendance = () => {
           <Save className="w-4 h-4 mr-2" /> {loading ? "Saving..." : "Save Attendance"}
         </Button>
       </div>
-    </AppLayout>
+    </>
   );
 };
 

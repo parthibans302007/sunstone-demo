@@ -18,12 +18,16 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
     setError("");
-    const success = await login(email, password);
-    setIsLoading(false);
-    if (success) {
-      navigate("/dashboard");
-    } else {
-      setError("Invalid credentials. Please try again.");
+    try {
+      const success = await login(email, password);
+      if (success) {
+        navigate("/dashboard");
+      }
+    } catch (err: any) {
+      const errMsg = err.response?.data?.message || err.message || "Invalid credentials. Please try again.";
+      setError(errMsg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -43,7 +47,7 @@ const Login = () => {
             <GraduationCap className="w-5 h-5 text-accent-foreground" />
           </div>
           <div>
-            <span className="text-xl font-bold text-primary">Sunstone <span className="font-normal">Academy</span></span>
+            <span className="text-xl font-bold text-primary">Sunstone <span className="font-normal">Management System</span></span>
           </div>
         </div>
       </header>
@@ -109,7 +113,7 @@ const Login = () => {
             By logging in, you agree to our Terms of Use and Privacy Policy.
           </p>
           <p className="text-center text-xs text-muted-foreground mt-2">
-            2026 © Sunstone Academy. All Rights Reserved.
+            2026 © Sunstone Management System. All Rights Reserved.
           </p>
         </div>
       </div>

@@ -1,5 +1,4 @@
 import { useParams } from "react-router-dom";
-import { AppLayout } from "@/components/AppLayout";
 import { mockStudents, mockSubjects, generateAttendanceCalendar } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { ArrowLeft, Mail, Phone, Award, TrendingDown } from "lucide-react";
@@ -19,7 +18,7 @@ const StudentProfile = () => {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
   const calendar = generateAttendanceCalendar(selectedMonth, 2024);
 
-  if (!student) return <AppLayout><p>Student not found</p></AppLayout>;
+  if (!student) return <p>Student not found</p>;
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -39,7 +38,7 @@ const StudentProfile = () => {
   };
 
   return (
-    <AppLayout>
+    <>
       {id && (
         <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
           <ArrowLeft className="w-4 h-4 mr-1" /> Back
@@ -155,7 +154,7 @@ const StudentProfile = () => {
           </div>
         </div>
       </div>
-    </AppLayout>
+    </>
   );
 };
 

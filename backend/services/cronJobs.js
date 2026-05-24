@@ -3,6 +3,7 @@ const Attendance = require('../models/Attendance');
 const Student = require('../models/Student');
 const User = require('../models/User');
 const { sendEmail } = require('../utils/emailService');
+const { isAttended } = require('../utils/attendanceHelper');
 
 const initCronJobs = () => {
     // Run every day at 6:00 PM (18:00)
@@ -46,7 +47,7 @@ const initCronJobs = () => {
                     const rec = a.records.find(r => r.student.toString() === s._id.toString());
                     if (rec) {
                         total++;
-                        if (rec.status === 'Present') present++;
+                        if (isAttended(rec.status)) present++;
                     }
                 });
 
@@ -91,7 +92,7 @@ const initCronJobs = () => {
             for (const email of adminEmails) {
                 await sendEmail({
                     to: email,
-                    subject: `Daily Attendance Summary - Sunstone Academy`,
+                    subject: `Daily Attendance Summary - Sunstone Management System`,
                     html: htmlBody
                 });
             }

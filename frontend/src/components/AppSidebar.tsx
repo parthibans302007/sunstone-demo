@@ -48,7 +48,7 @@ export const AppSidebar = () => {
           </div>
           <div className="flex flex-col">
             <h1 className="text-base font-bold text-white tracking-tight">Sunstone</h1>
-            <p className="text-xs text-sidebar-foreground/70 font-medium tracking-wide">ACADEMY</p>
+            <p className="text-[9px] text-sidebar-foreground/70 font-bold tracking-wider uppercase">MANAGEMENT SYSTEM</p>
           </div>
         </div>
       </div>

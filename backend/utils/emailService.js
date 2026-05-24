@@ -24,7 +24,7 @@ const sendEmail = async ({ to, subject, html }) => {
     const transporter = createTransporter();
     
     const info = await transporter.sendMail({
-      from: `"Sunstone Academy" <${process.env.EMAIL_USER}>`,
+      from: `"Sunstone Management System" <${process.env.EMAIL_USER}>`,
       to,
       subject,
       html,

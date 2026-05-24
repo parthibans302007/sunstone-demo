@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { AppSidebar } from "@/components/AppSidebar";
-import { AppLayout } from "@/components/AppLayout";
 import api from "@/lib/api";
 import { Plus, Pencil, Trash2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,10 +68,7 @@ const Categories = () => {
   }
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <AppSidebar />
-      <AppLayout>
-        <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-8 max-w-5xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-3 rounded-xl bg-primary/10 text-primary">
               <BookOpen className="w-8 h-8" />
@@ -154,8 +149,6 @@ const Categories = () => {
               </table>
             </div>
           </div>
-        </div>
-      </AppLayout>
     </div>
   );
 };
