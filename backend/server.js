@@ -14,6 +14,25 @@ const initCronJobs = require('./services/cronJobs');
 
 connectDB();
 
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
 const app = express();
 const server = http.createServer(app);
 
@@ -22,8 +41,15 @@ initCronJobs();
 
 const io = new Server(server, {
   cors: {
-    origin: "*", // allow all logic for now
-    methods: ["GET", "POST"]
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    methods: ["GET", "POST"],
+    credentials: true
   }
 });
 app.set('io', io); // Accessible in controllers via req.app.get('io')
@@ -35,7 +61,7 @@ io.on('connection', (socket) => {
     });
 });
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Middleware to check database connection status
@@ -104,5 +130,3 @@ app.use((req, res, next) => {
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = app;
