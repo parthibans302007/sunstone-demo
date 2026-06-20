@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const ApiError = require('../utils/ApiError');
 
 const protect = async (req, res, next) => {
     let token;
@@ -9,33 +10,39 @@ const protect = async (req, res, next) => {
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
             req.user = await User.findById(decoded.id).select('-password');
             if(!req.user) {
-                return res.status(401).json({ message: 'User deleted or not found' });
+                return next(new ApiError(401, 'User deleted or not found'));
             }
-            next();
+            return next();
         } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error('JWT Verification Error:', error.message);
+            return next(new ApiError(401, 'Not authorized, token failed'));
         }
     }
     if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+        return next(new ApiError(401, 'Not authorized, no token'));
     }
 };
 
-const admin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
-        next();
-    } else {
-        res.status(401).json({ message: 'Not authorized as an admin' });
-    }
+// Flexible RBAC middleware supporting dynamic roles
+const authorize = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user) {
+            return next(new ApiError(401, 'Not authenticated'));
+        }
+        
+        const allowedRoles = roles.map(role => role.toLowerCase());
+        const userRole = req.user.role ? req.user.role.toLowerCase() : '';
+
+        if (allowedRoles.includes(userRole)) {
+            next();
+        } else {
+            next(new ApiError(403, `Forbidden: Access denied for role: ${req.user.role}`));
+        }
+    };
 };
 
-const facultyOrAdmin = (req, res, next) => {
-    if (req.user && (req.user.role === 'admin' || req.user.role === 'faculty')) {
-        next();
-    } else {
-        res.status(401).json({ message: 'Not authorized as faculty/admin' });
-    }
-};
+// Backward-compatible exports
+const admin = authorize('admin');
+const facultyOrAdmin = authorize('admin', 'faculty');
 
-module.exports = { protect, admin, facultyOrAdmin };
+module.exports = { protect, authorize, admin, facultyOrAdmin };

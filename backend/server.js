@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
+const helmet = require('helmet');
+const cookieParser = require('cookie-parser');
 const { Server } = require('socket.io');
 const connectDB = require('./config/db');
 
@@ -10,11 +12,19 @@ const categoryRoutes = require('./routes/categoryRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const placementRoutes = require('./routes/placementRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const auditRoutes = require('./routes/auditRoutes');
+const scheduleRoutes = require('./routes/scheduleRoutes');
 const initCronJobs = require('./services/cronJobs');
+const { apiLimiter } = require('./middleware/rateLimiter');
+const errorHandler = require('./middleware/errorHandler');
 
 connectDB();
 
 const allowedOrigins = [
+  'http://localhost:8080',
+  'http://127.0.0.1:8080',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
@@ -24,7 +34,7 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -42,7 +52,7 @@ initCronJobs();
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.some(o => origin.startsWith(o))) {
+      if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -61,8 +71,11 @@ io.on('connection', (socket) => {
     });
 });
 
+app.use(helmet());
+app.use(cookieParser());
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use('/api', apiLimiter);
 
 // Middleware to check database connection status
 app.use('/api', async (req, res, next) => {
@@ -106,10 +119,66 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/placement', placementRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/audit-logs', auditRoutes);
+app.use('/api/schedules', scheduleRoutes);
+
+const { protect, admin } = require('./middleware/authMiddleware');
+app.get('/api/health', protect, admin, async (req, res) => {
+    try {
+        const mongoose = require('mongoose');
+        const User = require('./models/User');
+        const RefreshToken = require('./models/RefreshToken');
+        const AuditLog = require('./models/AuditLog');
+        
+        // 1. Database status
+        const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
+        
+        // 2. Total Users
+        const totalUsers = await User.countDocuments({});
+        const totalStudents = await require('./models/Student').countDocuments({});
+        const totalFaculty = await User.countDocuments({ role: 'faculty' });
+        
+        // 3. Active Sessions (refresh tokens)
+        const activeSessions = await RefreshToken.countDocuments({ expiresAt: { $gt: new Date() } });
+        
+        // 4. API Health & System usage
+        const os = require('os');
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = totalMem - freeMem;
+        const memoryUsage = `${Math.round(usedMem / (1024 * 1024))} MB / ${Math.round(totalMem / (1024 * 1024))} MB`;
+        
+        const systemCpu = os.cpus().length;
+        
+        // 5. Recent Errors / deletes
+        const recentErrors = await AuditLog.find({ actionType: { $in: ['LOGIN_FAILED', 'DELETE', 'STUDENT_DELETED', 'ERROR'] } })
+            .sort({ createdAt: -1 })
+            .limit(5);
+
+        res.json({
+            success: true,
+            dbStatus,
+            totalUsers,
+            totalStudents,
+            totalFaculty,
+            activeSessions,
+            memoryUsage,
+            systemCpu,
+            uptime: Math.round(process.uptime()),
+            recentErrors
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 app.get('/api', (req, res) => {
     res.send('Sunstone Management System Backend API is running');
 });
+
+app.use(errorHandler);
 
 const path = require('path');
 
@@ -127,6 +196,10 @@ app.use((req, res, next) => {
   }
 });
 
-server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+if (require.main === module) {
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+module.exports = { app, server };

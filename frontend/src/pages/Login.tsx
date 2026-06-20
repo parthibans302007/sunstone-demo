@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { GraduationCap, Eye, EyeOff } from "lucide-react";
+import { GraduationCap, Eye, EyeOff, Lock, Mail, ArrowRight, CheckCircle2, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -31,90 +31,160 @@ const Login = () => {
     }
   };
 
-
   return (
-    <div className="min-h-screen bg-[#f0f7fc] relative overflow-hidden">
-      {/* Subtle pattern background */}
-      <div className="absolute inset-0 opacity-[0.04]" style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 24 24' fill='none' stroke='%230284c7' stroke-width='1.5'%3E%3Cpath d='M22 10v6M2 10l10-5 10 5-10 5z'/%3E%3Cpath d='M6 12v5c3 3 9 3 12 0v-5'/%3E%3C/svg%3E")`,
-        backgroundSize: "80px 80px",
-      }} />
+    <div className="min-h-screen flex bg-background text-foreground transition-colors duration-300">
+      {/* LEFT SIDE: Brand Showcase (Visible only on desktop md+) */}
+      <div className="hidden md:flex md:w-1/2 bg-gradient-to-tr from-[#3b1d82] via-[#21104a] to-[#ff6b00]/30 relative overflow-hidden flex-col justify-between p-12 text-white">
+        {/* Glow Effects */}
+        <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-[#ff6b00]/20 blur-[150px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-[#3b1d82]/40 blur-[150px] rounded-full pointer-events-none" />
+        
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M0 0h40v40H0z' fill='none'/%3E%3Cpath d='M0 40h40M40 0v40' stroke='%23ffffff' stroke-width='1'/%3E%3C/svg%3E")`,
+        }} />
 
-      {/* Header */}
-      <header className="relative z-10 px-6 py-4">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded bg-accent flex items-center justify-center">
-            <GraduationCap className="w-5 h-5 text-accent-foreground" />
+        {/* Brand Header */}
+        <div className="relative z-10 flex items-center gap-3 select-none">
+          <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <GraduationCap className="w-6 h-6 text-[#ff6b00]" />
           </div>
           <div>
-            <span className="text-xl font-bold text-primary">Sunstone <span className="font-normal">Management System</span></span>
+            <span className="text-xl font-bold tracking-tight">Sunstone <span className="font-normal text-white/70">Management</span></span>
           </div>
         </div>
-      </header>
 
-      {/* Center card */}
-      <div className="relative z-10 flex items-center justify-center px-4" style={{ minHeight: "calc(100vh - 80px)" }}>
-        <div className="w-full max-w-md">
-          <div className="bg-card rounded-xl shadow-lg border p-8">
-            <h2 className="text-xl font-semibold text-center mb-6">Welcome Back</h2>
+        {/* Feature Copy */}
+        <div className="relative z-10 my-auto max-w-lg space-y-6">
+          <h1 className="text-4xl font-extrabold tracking-tight leading-tight lg:text-5xl">
+            The intelligent operating system for modern campuses.
+          </h1>
+          <p className="text-white/80 text-base leading-relaxed">
+            Streamlining attendance workflows, real-time student monitoring, and academic progress tracking in one unified workspace.
+          </p>
 
-            {error && (
-              <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center">{error}</div>
-            )}
+          {/* Quick Metrics */}
+          <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/10">
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-[#ff6b00]">99.8%</p>
+              <p className="text-xs text-white/60 font-semibold uppercase tracking-wider">Sync Uptime</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-2xl font-bold text-[#ff6b00]">&lt; 2s</p>
+              <p className="text-xs text-white/60 font-semibold uppercase tracking-wider">Live Update Latency</p>
+            </div>
+          </div>
+        </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">User name</label>
+        {/* Footer info */}
+        <div className="relative z-10 flex items-center justify-between text-xs text-white/50">
+          <span>Enterprise Campus Portal</span>
+          <span>Version 2.4.0</span>
+        </div>
+      </div>
+
+      {/* RIGHT SIDE: Login form */}
+      <div className="w-full md:w-1/2 flex items-center justify-center p-6 sm:p-12 bg-background relative">
+        <div className="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-[#ff6b00]/5 dark:bg-[#ff6b00]/10 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-[#3b1d82]/5 dark:bg-[#3b1d82]/10 blur-[120px] rounded-full pointer-events-none" />
+
+        <div className="w-full max-w-md space-y-8 z-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {/* Mobile logo (Visible only on small screens) */}
+          <div className="flex flex-col items-center md:hidden mb-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg mb-3">
+              <GraduationCap className="w-7 h-7 text-white" />
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Sunstone Management</h1>
+            <p className="text-xs text-muted-foreground mt-1">College Management Portal</p>
+          </div>
+
+          {/* Header */}
+          <div className="text-center md:text-left space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome back</h2>
+            <p className="text-muted-foreground text-sm">Enter your credentials below to log into your account.</p>
+          </div>
+
+          {/* Error message */}
+          {error && (
+            <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-start gap-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+              <ShieldAlert className="w-4 h-4 mt-0.5 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">User Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
                 <Input
                   type="email"
                   name="email"
                   placeholder="name@sunstone.edu"
                   value={email}
                   onChange={(e) => { setEmail(e.target.value); setError(""); }}
-                  className="h-11"
+                  className="h-11 pl-10 bg-card/50 focus-visible:ring-[#ff6b00] focus-visible:border-[#ff6b00]"
                   autoComplete="off"
                   required
                 />
               </div>
-              <div>
-                <label className="text-sm font-medium text-muted-foreground mb-1.5 block">Password</label>
-                <div className="relative">
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                    className="h-11 pr-10"
-                    autoComplete="new-password"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <div className="text-right mt-1.5">
-                  <button type="button" className="text-xs text-accent hover:underline">Forgot password?</button>
-                </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Password</label>
+                <button type="button" className="text-xs font-semibold text-primary hover:underline underline-offset-2">
+                  Forgot?
+                </button>
               </div>
-              <Button type="submit" disabled={isLoading} className="w-full h-11 bg-accent hover:bg-accent/90 text-accent-foreground font-medium">
-                {isLoading ? "Logging in..." : "Login"}
-              </Button>
-            </form>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => { setPassword(e.target.value); setError(""); }}
+                  className="h-11 pl-10 pr-10 bg-card/50 focus-visible:ring-[#ff6b00] focus-visible:border-[#ff6b00]"
+                  autoComplete="new-password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 bg-primary hover:bg-primary/95 text-white font-semibold rounded-xl shadow-md shadow-primary/10 hover:shadow-primary/20 transition-all flex items-center justify-center gap-2 mt-6 active:scale-95"
+            >
+              {isLoading ? (
+                <span>Logging in...</span>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </Button>
+          </form>
 
+          {/* Footer disclaimer */}
+          <div className="text-center space-y-4 pt-4 border-t border-border/50">
+            <p className="text-xs text-muted-foreground">
+              By logging in, you agree to our <a href="#" className="underline hover:text-foreground">Terms of Service</a> and <a href="#" className="underline hover:text-foreground">Privacy Policy</a>.
+            </p>
+            <p className="text-[10px] text-muted-foreground/60 font-semibold tracking-wider uppercase">
+              © 2026 Sunstone Inc. All Rights Reserved.
+            </p>
           </div>
-
-          <p className="text-center text-xs text-muted-foreground mt-6">
-            By logging in, you agree to our Terms of Use and Privacy Policy.
-          </p>
-          <p className="text-center text-xs text-muted-foreground mt-2">
-            2026 © Sunstone Management System. All Rights Reserved.
-          </p>
         </div>
       </div>
     </div>

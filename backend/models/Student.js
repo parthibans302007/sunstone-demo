@@ -8,11 +8,23 @@ const studentSchema = mongoose.Schema({
     parentContact: { type: String },
     address: { type: String },
     
+    uid: { type: String },
+    whatsappNumber: { type: String },
+    officialEmail: { type: String },
+    fatherName: { type: String },
+    fatherOccupation: { type: String },
+    fatherMobile: { type: String },
+    motherName: { type: String },
+    motherOccupation: { type: String },
+    motherMobile: { type: String },
+    guardianName: { type: String },
+    guardianMobile: { type: String },
+    
     // Academic fields
     batch: { type: String },
     course: { type: String }, // e.g. "BBA", "MBA", "BCA"
-    semester: { type: Number }, // 1 to 8
-    year: { type: Number }, // 1 to 4
+    semester: { type: Number, default: 1 }, // 1 to 8
+    year: { type: Number, default: 1 }, // 1 to 4
     section: { type: String }, // "A", "B", "C"
     academicYear: { type: String }, // "2025-2026"
     isActive: { type: Boolean, default: true },
@@ -24,16 +36,80 @@ const studentSchema = mongoose.Schema({
     bloodGroup: { type: String },
 
     // Performance & Financial & Other status fields
-    gpa: { type: Number },
+    gpa: { type: Number, default: 0 },
+    cgpa: { type: Number, default: 0 },
+    attendancePercentage: { type: Number, default: 0 },
+    placementStatus: {
+        type: String,
+        enum: ["Eligible", "Needs Improvement", "Not Eligible"],
+        default: "Needs Improvement"
+    },
+    placementReadinessScore: { type: Number, default: 0 },
+    importBatchId: { type: String },
+
     feesPaid: { type: Boolean, default: false },
     noDueStatus: { type: Boolean, default: false },
     internalMarks: { type: Number }, // out of 100
-    semesterMarks: { type: Number }, // out of 100
+    semesterMarks: { type: Number }, // out of 105
     classTestMarks: { type: Number }, // out of 100
     backlogCount: { type: Number, default: 0 },
     internshipCompleted: { type: Boolean, default: false },
-    overallPerformance: { type: String } // "Excellent", "Good", "Average", "Poor"
+    overallPerformance: { type: String }, // "Excellent", "Good", "Average", "Poor"
+    notes: { type: String, default: '' },
+    mentorshipNotes: [{
+        author: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        authorName: { type: String, required: true },
+        type: { type: String, enum: ['Note', 'Warning', 'Guidance'], default: 'Note' },
+        content: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }]
 }, { timestamps: true });
+
+// Pre-save hook to keep gpa/cgpa in sync, and auto-calculate placementStatus/readiness
+// studentSchema.pre('save', function(next) {
+//     // Sync gpa and cgpa
+//     if (this.cgpa !== undefined) {
+//         this.gpa = this.cgpa;
+//     } else if (this.gpa !== undefined) {
+//         this.cgpa = this.gpa;
+//     }
+//
+//     // Ensure numeric values
+//     const cgpaVal = this.cgpa || 0;
+//     const attVal = this.attendancePercentage || 0;
+//     const backlogVal = this.backlogCount || 0;
+//     const internVal = this.internshipCompleted === true || this.internshipCompleted === 'true';
+//
+//     // Calculate Placement Status
+//     if (cgpaVal >= 6.5 && attVal >= 75 && backlogVal <= 2 && internVal) {
+//         this.placementStatus = 'Eligible';
+//     } else if (cgpaVal >= 5.5 && attVal >= 65 && backlogVal <= 4) {
+//         this.placementStatus = 'Needs Improvement';
+//     } else {
+//         this.placementStatus = 'Not Eligible';
+//     }
+//
+//     // Calculate Placement Readiness Score (0-100)
+//     const cgpaScore = (cgpaVal / 10.0) * 40;
+//     const attScore = (attVal / 100.0) * 30;
+//     const internScore = internVal ? 20 : 0;
+//     const arrearsScore = Math.max(0, 10 - (backlogVal * 2));
+//
+//     this.placementReadinessScore = Math.round(cgpaScore + attScore + internScore + arrearsScore);
+//
+//     // Auto-update overallPerformance based on score
+//     if (this.placementReadinessScore >= 95) {
+//         this.overallPerformance = 'Excellent';
+//     } else if (this.placementReadinessScore >= 80) {
+//         this.overallPerformance = 'Good';
+//     } else if (this.placementReadinessScore >= 65) {
+//         this.overallPerformance = 'Average';
+//     } else {
+//         this.overallPerformance = 'Poor';
+//     }
+//
+//     next();
+// });
 
 const Student = mongoose.model('Student', studentSchema);
 module.exports = Student;

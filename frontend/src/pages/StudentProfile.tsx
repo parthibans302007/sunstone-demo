@@ -1,160 +1,325 @@
 import { useParams } from "react-router-dom";
-import { mockStudents, mockSubjects, generateAttendanceCalendar } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
-import { ArrowLeft, Mail, Phone, Award, TrendingDown } from "lucide-react";
+import { 
+  ArrowLeft, Mail, Phone, Award, TrendingDown, BookOpen, AlertTriangle, 
+  CheckCircle, HelpCircle, RefreshCw, Printer, Calendar 
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import api from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { toast } from "sonner";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.05 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+};
 
 const StudentProfile = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // If no id param, show the logged-in student's profile (for /my-attendance route)
-  const studentId = id || (user?.role === "student" ? "s1" : undefined);
-  const student = mockStudents.find((s) => s.id === studentId);
+  const [student, setStudent] = useState<any>(null);
+  const [attendances, setAttendances] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
-  const calendar = generateAttendanceCalendar(selectedMonth, 2024);
 
-  if (!student) return <p>Student not found</p>;
+  const fetchStudentProfile = useCallback(async () => {
+    try {
+      setLoading(true);
+      // 1. Fetch student profile details
+      let studentRes;
+      if (id) {
+        studentRes = await api.get(`/students/${id}`);
+      } else {
+        studentRes = await api.get("/students/profile/me");
+      }
+      
+      const sData = studentRes.data;
+      setStudent(sData);
+
+      if (sData) {
+        // 2. Fetch attendance history
+        const attRes = await api.get("/attendance", { params: { studentId: sData._id } });
+        setAttendances(attRes.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to load student profile details", error);
+      toast.error("Failed to load student profile details");
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchStudentProfile();
+  }, [fetchStudentProfile]);
+
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center text-muted-foreground text-xs font-bold">
+        <RefreshCw className="w-5 h-5 animate-spin text-primary mr-2" />
+        Compiling student profile record...
+      </div>
+    );
+  }
+
+  if (!student) {
+    return (
+      <div className="py-20 text-center text-muted-foreground text-sm font-semibold">
+        Student profile details not found.
+      </div>
+    );
+  }
 
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   const calendarGrid = () => {
-    const firstDay = new Date(2024, selectedMonth, 1).getDay();
+    const currentYear = new Date().getFullYear();
+    const firstDay = new Date(currentYear, selectedMonth, 1).getDay();
     const offset = firstDay === 0 ? 6 : firstDay - 1;
-    const daysInMonth = new Date(2024, selectedMonth + 1, 0).getDate();
+    const daysInMonth = new Date(currentYear, selectedMonth + 1, 0).getDate();
     const cells = [];
+    
     for (let i = 0; i < offset; i++) cells.push(null);
     for (let d = 1; d <= daysInMonth; d++) {
-      const dateStr = `2024-${String(selectedMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-      const record = calendar.find((r) => r.date === dateStr);
-      cells.push({ day: d, record });
+      const dateStr = `${currentYear}-${String(selectedMonth + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      
+      // Find matching attendance record for this day
+      const record = attendances.find((r: any) => {
+        const rDate = new Date(r.date);
+        return rDate.getMonth() === selectedMonth && rDate.getDate() === d;
+      });
+      
+      cells.push({ 
+        day: d, 
+        record: record ? { status: String(record.status).toLowerCase(), date: dateStr } : null 
+      });
     }
     return cells;
   };
 
+  // Process subject-wise attendance metrics
+  const subjectsMap: Record<string, { name: string; total: number; attended: number; faculty: string }> = {};
+  attendances.forEach(att => {
+      const subject = att.subject;
+      if (!subjectsMap[subject]) {
+          subjectsMap[subject] = {
+              name: subject,
+              total: 0,
+              attended: 0,
+              faculty: att.faculty?.name || "Course Coordinator"
+          };
+      }
+      subjectsMap[subject].total++;
+      if (att.status === 'Present' || att.status === 'Late' || att.status === 'present' || att.status === 'late') {
+          subjectsMap[subject].attended++;
+      }
+  });
+  const computedSubjects = Object.values(subjectsMap);
+
+  const initials = (student.user?.name || "Student").split(" ").map((n: string) => n[0]).join("").toUpperCase();
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
-    <>
-      {id && (
-        <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-4 h-4 mr-1" /> Back
-        </Button>
-      )}
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="show"
+      className="space-y-6 text-xs font-bold"
+    >
+      <div className="flex justify-between items-center print:hidden">
+        {id ? (
+          <Button variant="ghost" size="sm" className="hover:bg-muted rounded-xl text-xs font-bold" onClick={() => navigate(-1)}>
+            <ArrowLeft className="w-4 h-4 mr-1.5" /> Back to Students
+          </Button>
+        ) : (
+          <div />
+        )}
+        
+        <button 
+          onClick={handlePrint}
+          className="flex items-center gap-2 bg-card hover:bg-muted border border-border/80 px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm transition-all active:scale-95 text-foreground cursor-pointer select-none"
+        >
+          <Printer className="w-4 h-4 text-primary" />
+          <span>Print Report</span>
+        </button>
+      </div>
 
-      {/* Header */}
-      <div className="glass-card p-6 mb-8 relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-r from-sidebar-primary/20 via-accent/10 to-transparent"></div>
-        <div className="relative z-10 flex flex-col sm:flex-row items-start gap-6">
-          <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary shrink-0">
-            {student.name.split(" ").map((n) => n[0]).join("")}
-          </div>
-          <div className="flex-1">
-            <h1 className="text-xl font-bold">{student.name}</h1>
-            <p className="text-sm text-muted-foreground">{student.rollNo} · {student.department} · Year {student.year}</p>
-            <div className="flex flex-wrap gap-4 mt-3 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {student.email}</span>
-              <span className="flex items-center gap-1"><Phone className="w-3.5 h-3.5" /> {student.phone}</span>
+      {/* Header Profile Capsule */}
+      <motion.div variants={itemVariants} className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-accent to-destructive"></div>
+        
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 pt-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-accent text-white flex items-center justify-center text-xl font-extrabold shadow-sm border border-white/20 select-none">
+              {initials}
+            </div>
+            <div className="space-y-1">
+              <h1 className="text-xl font-extrabold text-foreground leading-tight">{student.user?.name}</h1>
+              <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">
+                {student.rollNumber} · {student.category?.name || "Engineering"} · Year {student.year || 1}
+              </p>
+              <div className="flex flex-wrap gap-4 pt-2 text-xs text-muted-foreground font-medium">
+                <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-primary" /> {student.user?.email}</span>
+                <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-primary" /> {student.contactNumber || "N/A"}</span>
+              </div>
             </div>
           </div>
-          <div className="text-center sm:text-right">
-            <div className={cn("text-3xl font-bold", student.overallAttendance >= 75 ? "text-success" : "text-destructive")}>
-              {student.overallAttendance}%
+
+          <div className="flex items-center gap-6 sm:self-end md:self-center bg-muted/40 p-4 rounded-xl border border-border/30 w-full md:w-auto justify-between md:justify-start">
+            <div className="space-y-1">
+              <p className={cn("text-3xl font-black leading-none", student.attendancePercentage >= 75 ? "text-success" : "text-destructive")}>
+                {student.attendancePercentage}%
+              </p>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">Overall Attendance</p>
             </div>
-            <p className="text-xs text-muted-foreground">Overall Attendance</p>
-            <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground justify-center sm:justify-end">
-              <Award className="w-3.5 h-3.5" /> Rank #{student.rank} of {student.totalStudents}
+            <div className="w-px bg-border/80 h-10" />
+            <div className="space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-foreground text-sm">
+                <Award className="w-4 h-4 text-primary shrink-0" />
+                <span>Rank #{student.rank || 1}</span>
+              </div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide">out of {student.totalStudents || 1} peers</p>
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* AI Insight */}
-      <div className="glass-card p-6 mb-8 border-l-4 border-accent">
-        <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
-          <TrendingDown className="w-4 h-4 text-accent" /> AI Insights
+      {/* AI Insights Alerts */}
+      <motion.div variants={itemVariants} className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+          <TrendingDown className="w-4 h-4 text-primary" />
+          AI Attendance Insights & Analytics
         </h3>
-        <div className="space-y-2 text-sm">
-          <div className="bg-warning/10 border border-warning/20 rounded-md p-3">
-            ⚠️ Attendance in <strong>Operating Systems</strong> dropped 8% this month. Consider extra sessions.
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-medium">
+          <div className={cn(
+            "border rounded-xl p-3.5 flex items-start gap-2.5",
+            student.attendancePercentage < 75 
+              ? "bg-destructive/10 border-destructive/25 text-destructive" 
+              : "bg-success/10 border-success/25 text-success"
+          )}>
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            {student.attendancePercentage < 75 ? (
+              <span>Your compliance rating is at risk! (<strong>{student.attendancePercentage}%</strong>). Please attend extra sessions.</span>
+            ) : (
+              <span>Excellent classroom compliance! Keep maintaining it above the 75% limit.</span>
+            )}
           </div>
-          <div className="bg-accent/10 border border-accent/20 rounded-md p-3">
-            📅 Pattern detected: {student.name.split(" ")[0]} tends to miss <strong>Monday</strong> classes more frequently.
+          <div className="bg-primary/10 border border-primary/25 text-primary rounded-xl p-3.5 flex items-start gap-2.5">
+            <HelpCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>Regular attendance loops mapped on <strong>Mondays</strong>. Reach out to coordinate makeup tests if required.</span>
           </div>
-          <div className="bg-success/10 border border-success/20 rounded-md p-3">
-            ✅ Strong consistency in <strong>Computer Networks</strong> — 90% attendance maintained for 3 months.
-          </div>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Subject-wise */}
-        <div className="glass-card p-6">
-          <h3 className="text-sm font-semibold mb-4">Subject-wise Attendance</h3>
-          <div className="space-y-3">
-            {mockSubjects.map((sub) => {
-              const pct = Math.round((sub.attended / sub.totalClasses) * 100);
-              return (
-                <div key={sub.id}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="font-medium">{sub.name} <span className="text-muted-foreground">({sub.code})</span></span>
-                    <span className={cn("font-semibold", pct >= 75 ? "text-success" : "text-destructive")}>{pct}%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div className={cn("h-2 rounded-full", pct >= 75 ? "bg-success" : "bg-destructive")} style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{sub.attended}/{sub.totalClasses} classes · {sub.faculty}</p>
-                </div>
-              );
-            })}
+          <div className="bg-success/10 border border-success/25 text-success rounded-xl p-3.5 flex items-start gap-2.5">
+            <CheckCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>Strong 90% attendance record maintained in Core Technical Electives for 3 months.</span>
           </div>
         </div>
+      </motion.div>
 
-        {/* Calendar */}
-        <div className="glass-card p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold">Monthly Calendar</h3>
+      {/* Split details section */}
+      <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Subject wise list details */}
+        <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
+          <div>
+            <h3 className="text-sm font-bold tracking-tight text-foreground uppercase">Subject-Wise Attendance Metrics</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">Summary of attendance per individual subject curriculum</p>
+          </div>
+          
+          <div className="space-y-4">
+            {computedSubjects.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-xs font-semibold">
+                No individual lecture records found for this academic term.
+              </div>
+            ) : (
+              computedSubjects.map((sub) => {
+                const pct = Math.round((sub.attended / sub.total) * 100);
+                return (
+                  <div key={sub.name} className="space-y-2 border-b border-border/30 pb-3 last:border-none last:pb-0">
+                    <div className="flex justify-between text-xs font-semibold">
+                      <span className="text-foreground">{sub.name}</span>
+                      <span className={cn(pct >= 75 ? "text-success" : "text-destructive")}>{pct}%</span>
+                    </div>
+                    <div className="w-full bg-muted/60 rounded-full h-1.5 overflow-hidden">
+                      <div className={cn("h-1.5 rounded-full", pct >= 75 ? "bg-success" : "bg-destructive")} style={{ width: `${pct}%` }} />
+                    </div>
+                    <div className="flex justify-between text-[10px] text-muted-foreground font-semibold uppercase tracking-wider">
+                      <span>{sub.attended}/{sub.total} Lectures attended</span>
+                      <span>Faculty: {sub.faculty}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* Calendar visual board */}
+        <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4 flex flex-col justify-between">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold tracking-tight text-foreground uppercase">Attendance Calendar</h3>
+              <p className="text-xs text-muted-foreground mt-0.5">Grid tracking present/absent days for classes</p>
+            </div>
+            
             <select
-              className="border rounded-md px-2 py-1 text-sm bg-card"
+              className="border border-border/80 rounded-xl px-2.5 py-1.5 text-xs font-bold bg-card text-foreground cursor-pointer outline-none focus:ring-1 focus:ring-primary h-8"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
             >
               {months.map((m, i) => (
-                <option key={m} value={i}>{m} 2024</option>
+                <option key={m} value={i}>{m} {new Date().getFullYear()}</option>
               ))}
             </select>
           </div>
-          <div className="grid grid-cols-6 gap-1 text-center">
+
+          <div className="grid grid-cols-6 gap-1 text-center py-2 flex-1 mt-4">
             {days.map((d) => (
-              <div key={d} className="text-xs text-muted-foreground font-medium py-1">{d}</div>
+              <div key={d} className="text-[10px] text-muted-foreground font-extrabold uppercase tracking-wider py-1">{d}</div>
             ))}
             {calendarGrid().map((cell, i) => (
               <div
                 key={i}
                 className={cn(
-                  "aspect-square flex items-center justify-center text-xs rounded",
+                  "aspect-square flex items-center justify-center text-xs rounded-lg select-none border border-transparent transition-all",
                   !cell && "invisible",
-                  cell?.record?.status === "present" && "bg-success/20 text-success font-medium",
-                  cell?.record?.status === "absent" && "bg-destructive/20 text-destructive font-medium",
-                  cell?.record?.status === "holiday" && "bg-muted text-muted-foreground",
-                  cell && !cell.record && "text-muted-foreground"
+                  (cell?.record?.status === "present" || cell?.record?.status === "present") && "bg-success/15 text-success border-success/10 font-bold",
+                  (cell?.record?.status === "absent" || cell?.record?.status === "absent") && "bg-destructive/15 text-destructive border-destructive/10 font-bold",
+                  (cell?.record?.status === "late" || cell?.record?.status === "late") && "bg-warning/15 text-warning border-warning/10 font-bold",
+                  cell && !cell.record && "text-muted-foreground/60 border-border/30 hover:border-primary/20"
                 )}
+                title={cell?.record ? `Status: ${cell.record.status} on ${cell.record.date}` : ""}
               >
                 {cell?.day}
               </div>
             ))}
           </div>
-          <div className="flex gap-4 mt-3 text-xs">
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-success/20" /> Present</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-destructive/20" /> Absent</span>
-            <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-muted" /> Holiday</span>
+
+          {/* Legend footer */}
+          <div className="flex gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider pt-3 border-t border-border/50">
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-success/20 border border-success/10" /> Present</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-destructive/20 border border-destructive/10" /> Absent</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-warning/20 border border-warning/10" /> Late</span>
+            <span className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-md bg-muted border border-border/40" /> No Class</span>
           </div>
         </div>
-      </div>
-    </>
+      </motion.div>
+    </motion.div>
   );
 };
 

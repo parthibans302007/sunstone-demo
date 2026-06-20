@@ -1,0 +1,10 @@
+◇ injecting env (4) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Atlas connection failed. Trying local MongoDB...
+MongoDB Connected (Local): 127.0.0.1
+Clearing database for fresh seed...
+Categories seeded.
+Core Admin & Faculty users seeded.
+Error during database seeding: TypeError: next is not a function
+    at model.<anonymous> (C:\Users\Acer\Documents\sunstone-management-system\backend\models\Student.js:111:5)
+    at Kareem.execPre (C:\Users\Acer\Documents\sunstone-management-system\backend\node_modules\kareem\index.js:68:39)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

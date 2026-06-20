@@ -33,17 +33,18 @@ A production-ready, full-stack College Management System. This project seamlessl
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
-Make sure you have [Node.js](https://nodejs.org/) installed, and a [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database) connection string (or run MongoDB locally on port 27017).
+Make sure you have [Node.js](https://nodejs.org/) >= 18.x installed, and a [MongoDB Atlas](https://www.mongodb.com/products/platform/atlas-database) connection string (or run MongoDB locally on port 27017).
 
-### 1. Clone & Install Dependencies
-First, install the backend services:
+### 1. Install Dependencies
+You can install dependencies for both backend and frontend by running:
 ```bash
-cd backend
 npm install
 ```
 
-Then install the frontend client dependencies:
+Alternatively, you can install them separately:
 ```bash
+cd backend
+npm install
 cd ../frontend
 npm install
 ```

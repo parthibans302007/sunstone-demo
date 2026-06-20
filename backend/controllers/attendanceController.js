@@ -74,11 +74,17 @@ const markAttendance = async (req, res) => {
     const { date, category, subject, records } = req.body;
     try {
         let attendance = await Attendance.findOne({ date, category, subject });
+        const { logAction } = require('../utils/auditLogger');
+        
         if (attendance) {
             // Update existing
+            const previousState = attendance.toObject();
             attendance.records = records;
             attendance.faculty = req.user._id;
             await attendance.save();
+            
+            await logAction(req, 'ATTENDANCE_MODIFIED', 'ATTENDANCE', previousState, attendance.toObject());
+            
             const io = req.app.get('io');
             if (io) io.emit('attendanceUpdate', { action: 'updated', date, category, subject });
             res.json(attendance);
@@ -86,6 +92,9 @@ const markAttendance = async (req, res) => {
             attendance = await Attendance.create({
                 date, category, subject, records, faculty: req.user._id
             });
+            
+            await logAction(req, 'ATTENDANCE_MARKED', 'ATTENDANCE', null, attendance.toObject());
+            
             const io = req.app.get('io');
             if (io) io.emit('attendanceUpdate', { action: 'created', date, category, subject });
             res.status(201).json(attendance);
@@ -100,13 +109,85 @@ const markAttendance = async (req, res) => {
 };
 
 const getAttendance = async (req, res) => {
-    const { date, category, subject } = req.query;
+    const { date, category, subject, studentId } = req.query;
+    const User = require('../models/User');
     let query = {};
     if (date) query.date = date;
     if (category) query.category = category;
     if (subject) query.subject = subject;
 
     try {
+        // Enforce student role boundaries
+        if (req.user.role === 'student') {
+            const student = await Student.findOne({ user: req.user._id });
+            if (!student) {
+                return res.json([]);
+            }
+            query["records.student"] = student._id;
+            
+            const attendances = await Attendance.find(query)
+                .populate('category', 'name')
+                .populate('faculty', 'name');
+            
+            // Map each attendance to only include this student's status
+            const filteredAttendances = attendances.map(att => {
+                const myRecord = att.records.find(r => r.student.toString() === student._id.toString());
+                return {
+                    _id: att._id,
+                    date: att.date,
+                    subject: att.subject,
+                    category: att.category,
+                    faculty: att.faculty,
+                    status: myRecord ? myRecord.status : null,
+                    remarks: myRecord ? myRecord.remarks : ''
+                };
+            });
+            return res.json(filteredAttendances);
+        }
+
+        // For Faculty & Admin
+        // If query is specifically for a single student profile view
+        if (studentId) {
+            query["records.student"] = studentId;
+            const attendances = await Attendance.find(query)
+                .populate('category', 'name')
+                .populate('faculty', 'name');
+            
+            const filteredAttendances = attendances.map(att => {
+                const myRecord = att.records.find(r => r.student.toString() === studentId.toString());
+                return {
+                    _id: att._id,
+                    date: att.date,
+                    subject: att.subject,
+                    category: att.category,
+                    faculty: att.faculty,
+                    status: myRecord ? myRecord.status : null,
+                    remarks: myRecord ? myRecord.remarks : ''
+                };
+            });
+            return res.json(filteredAttendances);
+        }
+
+        // Faculty role specific filters: view only their department/assignments
+        if (req.user.role === 'faculty') {
+            const currentUser = await User.findById(req.user._id);
+            if (currentUser) {
+                const assignedBatches = currentUser.assignedBatches || [];
+                const assignedCourses = currentUser.assignedCourses || [];
+                const assignedSections = currentUser.assignedSections || [];
+                
+                if (assignedBatches.length > 0 || assignedCourses.length > 0 || assignedSections.length > 0) {
+                    const studentQuery = {
+                        batch: { $in: assignedBatches },
+                        course: { $in: assignedCourses },
+                        section: { $in: assignedSections }
+                    };
+                    const studentIds = await Student.find(studentQuery).select('_id');
+                    query["records.student"] = { $in: studentIds.map(s => s._id) };
+                }
+            }
+        }
+
         const attendances = await Attendance.find(query)
             .populate('category', 'name')
             .populate('faculty', 'name')

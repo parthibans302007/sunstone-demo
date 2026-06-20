@@ -304,6 +304,9 @@ const getReports = async (req, res) => {
         const totalPages = Math.ceil(totalItems / Number(limit));
         const paginatedStudents = groupBy ? null : enrichedStudents.slice((Number(page) - 1) * Number(limit), Number(page) * Number(limit));
 
+        const { logAction } = require('../utils/auditLogger');
+        await logAction(req, 'REPORT_GENERATED', 'REPORTS', null, { reportType, course, batch, semester, format: req.query.format || 'JSON' });
+
         res.json({
             summary,
             students: groupBy ? null : paginatedStudents,

@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import api from "@/lib/api";
 
-export type Role = "admin" | "faculty" | "student";
+export type Role = "admin" | "faculty" | "student" | "parent";
 
 export interface User {
   _id: string;
@@ -67,11 +67,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    window.location.href = "/";
+  const logout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (error) {
+      console.error("Failed to call server logout", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      setUser(null);
+      window.location.href = "/";
+    }
   };
 
   return (
