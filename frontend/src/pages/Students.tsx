@@ -5,13 +5,25 @@ import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Search, Filter, Plus, User, Mail, Phone, BookOpen, AlertCircle, X, 
-  Hash, LayoutGrid, List, ChevronLeft, ChevronRight, Download, Upload, 
+import {
+  Search, Filter, Plus, User, Mail, Phone, BookOpen, AlertCircle, X,
+  Hash, LayoutGrid, List, ChevronLeft, ChevronRight, Download, Upload,
   MapPin, Calendar, Check, GraduationCap, Briefcase, Award, Clock, FileText, CheckCircle
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+const COLORS = ["#2563EB", "#0F172A", "#16A34A", "#F59E0B", "#DC2626", "#8B5CF6"];
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 20 } }
+};
 
 // CSV parsing helper
 const parseCSV = (text: string) => {
@@ -943,10 +955,7 @@ const Students = () => {
       <AnimatePresence>
         {isEnrollModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+            <motion.div variants={containerVariants} initial="hidden" animate="show" exit={{ opacity: 0, scale: 0.95, y: 15 }}
               className="bg-card w-full max-w-xl rounded-2xl shadow-xl border flex flex-col my-8 max-h-[90vh]"
             >
               {/* Header */}

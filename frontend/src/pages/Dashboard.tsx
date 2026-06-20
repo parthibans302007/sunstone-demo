@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { StatCard } from "@/components/StatCard";
 import { cn } from "@/lib/utils";
-import { 
-  Users, ClipboardCheck, AlertTriangle, TrendingUp, UserCheck, 
-  Calendar, Sparkles, GraduationCap, ChevronRight, Briefcase, 
-  FileText, Upload, Plus, Layers, ShieldAlert, Award, Settings
+import {
+  Users, ClipboardCheck, AlertTriangle, TrendingUp, UserCheck,
+  Calendar, Sparkles, GraduationCap, ChevronRight, Briefcase,
+  FileText, Upload, Plus, Layers, ShieldAlert, Award, Settings, Activity
 } from "lucide-react";
 import api from "@/lib/api";
 import { socket } from "@/lib/socket";
@@ -21,12 +21,7 @@ const COLORS = ["#2563EB", "#0F172A", "#16A34A", "#F59E0B", "#DC2626", "#8B5CF6"
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05
-    }
-  }
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
 
 const itemVariants = {
@@ -267,6 +262,15 @@ const AdminFacultyDashboard = () => {
         <StatCard title="Placement Eligible" value={stats.placementEligibleCount} icon={Briefcase} variant="success" />
         <StatCard title="Students At Risk" value={stats.atRiskStudents} icon={AlertTriangle} variant={stats.atRiskStudents > 0 ? "destructive" : "success"} />
         <StatCard title="Internship Rate" value={`${stats.internshipRate}%`} icon={Award} subtitle="Milestone Completed" />
+        {/* Enhanced StatCard with trend */}
+        <StatCard
+          title="System Health"
+          value="Optimal"
+          icon={Activity}
+          trend="up"
+          trendValue="99.8%"
+          variant="success"
+        />
       </motion.div>
 
       {/* Quick Actions Panel */}
@@ -582,14 +586,17 @@ const StudentDashboard = () => {
   }
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="show"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className="space-y-6 text-xs font-bold"
     >
       {/* 5 stats cards */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5">
+      <motion.div
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }}
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-5"
+      >
         <StatCard
           title="Overall Attendance"
           value={`${attendancePct}%`}

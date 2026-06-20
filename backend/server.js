@@ -181,17 +181,15 @@ if (process.env.VERCEL !== '1') {
         });
     });
 
-    // Serve frontend static files
-    app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-    // Catch-all route to serve React app for internal routing
-    app.use((req, res, next) => {
-      if (req.method === 'GET' && !req.path.startsWith('/api')) {
-        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-      } else {
-        next();
-      }
-    });
+    // Remove static file serving and catch-all route for separate frontend deployment
+    // app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    // app.use((req, res, next) => {
+    //   if (req.method === 'GET' && !req.path.startsWith('/api')) {
+    //     res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    //   } else {
+    //     next();
+    //   }
+    // });
 
     const PORT = process.env.PORT || 5000;
 

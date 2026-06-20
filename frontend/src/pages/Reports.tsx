@@ -1,15 +1,15 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { 
-  FileText, Download, Search, Filter, Save, Trash2, 
-  ChevronLeft, ChevronRight, AlertTriangle, Printer, Check, 
-  ListFilter, Users, Award, Percent, Briefcase, GraduationCap, 
-  RefreshCw, Layers, Star, Copy, Share2
+import {
+  FileText, Download, Search, Filter, Save, Trash2,
+  ChevronLeft, ChevronRight, AlertTriangle, Printer, Check,
+  ListFilter, Users, Percent, Briefcase, GraduationCap,
+  RefreshCw, Layers
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 
 const ALL_FIELDS = [
   { label: "Student Name", key: "name" },
@@ -40,15 +40,12 @@ const ALL_FIELDS = [
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.03 }
-  }
+  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  hidden: { opacity: 0, y: 15 },
+  show: { opacity: 1, y: 0 }
 };
 
 const Reports = () => {
@@ -623,7 +620,7 @@ const Reports = () => {
       </div>
 
       {/* 6 Category Selection Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3.5 print:hidden">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 print:hidden">
         {[
           { key: "personal", label: "Personal Info", icon: Users, desc: "Personal demographics ledger" },
           { key: "attendance", label: "Attendance", icon: Percent, desc: "Compliance records" },
@@ -638,16 +635,18 @@ const Reports = () => {
               key={card.key}
               onClick={() => handleCategoryClick(card.key)}
               className={cn(
-                "p-4 rounded-xl border text-left flex flex-col justify-between h-28 hover:-translate-y-0.5 hover:shadow transition-all duration-200",
-                active 
-                  ? "bg-primary text-white border-primary shadow-md shadow-primary/15"
-                  : "bg-card border-border hover:border-border/80 text-foreground"
+                "p-6 rounded-2xl border text-left flex flex-col justify-between h-32 hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300 border-[1px]",
+                active
+                  ? "bg-primary text-white border-primary border-[2px] shadow-lg shadow-primary/20 hover:bg-primary/90"
+                  : "bg-card border-border hover:border-border/100 text-foreground hover:bg-muted/50"
               )}
             >
-              <card.icon className={cn("w-5 h-5", active ? "text-white" : "text-primary")} />
-              <div>
+              <div className="flex items-center justify-center mb-3">
+                <card.icon className={cn("w-6 h-6", active ? "text-white" : "text-primary")} />
+              </div>
+              <div className="space-y-2 text-center">
                 <span className="font-extrabold text-xs block leading-tight">{card.label}</span>
-                <span className={cn("text-[9px] font-medium leading-none block mt-1", active ? "text-white/80" : "text-muted-foreground")}>
+                <span className={cn("text-[9px] font-medium leading-none block mt-2", active ? "text-white/80" : "text-muted-foreground")}>
                   {card.desc}
                 </span>
               </div>

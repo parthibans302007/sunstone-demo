@@ -2,14 +2,17 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
-import { 
-  Briefcase, CheckCircle, AlertTriangle, XCircle, Settings, Users, 
-  Search, Download, RefreshCw, Sliders, FileText, Check, Award, HelpCircle
+import {
+  Briefcase, CheckCircle, AlertTriangle, XCircle,
+  Search, Download, RefreshCw, Sliders, Check, HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 
-const COLORS = ["#16A34A", "#F59E0B", "#DC2626"];
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { stiffness: 300, damping: 20 } }
+};
 
 const StudentPlacementView = ({ student, rule }: { student: any, rule: any }) => {
   const suggestions: string[] = [];
@@ -27,11 +30,7 @@ const StudentPlacementView = ({ student, rule }: { student: any, rule: any }) =>
   }
 
   return (
-    <motion.div 
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="space-y-6 text-xs font-bold"
-    >
+    <motion.div variants={itemVariants} initial="hidden" animate="show" className="space-y-6 text-xs font-bold">
       {/* Upper Brand Capsule */}
       <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-border/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
@@ -48,7 +47,7 @@ const StudentPlacementView = ({ student, rule }: { student: any, rule: any }) =>
         <div className="md:col-span-1 space-y-6">
           <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Eligibility Summary</h3>
-            
+
             <div className="space-y-4">
               <div>
                 <span className="text-[10px] text-muted-foreground uppercase">Readiness Index Score</span>
@@ -87,7 +86,7 @@ const StudentPlacementView = ({ student, rule }: { student: any, rule: any }) =>
         <div className="md:col-span-2 space-y-6">
           <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Rule Verification Checklist</h3>
-            
+
             <div className="space-y-4 font-semibold text-xs text-foreground">
               <div className="flex items-center justify-between border-b pb-3 border-border/40">
                 <div className="space-y-0.5">
@@ -151,7 +150,7 @@ const StudentPlacementView = ({ student, rule }: { student: any, rule: any }) =>
 
           <div className="bg-card border border-border/60 rounded-2xl p-6 shadow-sm space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">Improvement Suggestions & Advices</h3>
-            
+
             <div className="space-y-3 leading-relaxed text-xs">
               {suggestions.length === 0 ? (
                 <div className="bg-success/15 text-success border border-success/30 p-4 rounded-xl">
@@ -334,90 +333,101 @@ const Placement = () => {
       riskStatus: "High Risk"
     };
     const activeRule = placementData?.rule || { minCGPA: 6.0, minAttendance: 75, internshipRequired: false, maxBacklogs: 0 };
-    
-    return <StudentPlacementView student={sRecord} rule={activeRule} />;
+
+    return (
+      <motion.div variants={itemVariants} initial="hidden" animate="show">
+        <StudentPlacementView student={sRecord} rule={activeRule} />
+      </motion.div>
+    );
   }
 
   return (
     <div className="space-y-6">
       {/* Top Brand Capsule */}
-      <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-border/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
-        <div className="relative z-10 space-y-1">
-          <h1 className="text-2xl font-extrabold tracking-tight">Placement Eligibility Portal</h1>
-          <p className="text-xs text-muted-foreground font-medium">Define recruitment parameters, calculate scores, and generate corporate placement ready shortlists.</p>
+      <motion.div variants={itemVariants} initial="hidden" animate="show">
+        <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-border/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="relative z-10 space-y-1">
+            <h1 className="text-2xl font-extrabold tracking-tight">Placement Eligibility Portal</h1>
+            <p className="text-xs text-muted-foreground font-medium">Define recruitment parameters, calculate scores, and generate corporate placement ready shortlists.</p>
+          </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* KPI Cards row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-card p-4 rounded-xl border border-border/60 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0 border border-green-200">
-            <CheckCircle className="w-5 h-5" />
+      <motion.div variants={itemVariants} initial="hidden" animate="show" style={{ transitionDelay: "0.1s" }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="relative overflow-hidden rounded-2xl p-6 border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300">
+            <div className="w-10 h-10 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0 border border-green-200">
+              <CheckCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Eligible students</span>
+              <span className="text-lg font-black text-green-600">{stats.eligible}</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Eligible students</span>
-            <span className="text-lg font-black text-green-600">{stats.eligible}</span>
-          </div>
-        </div>
 
-        <div className="bg-card p-4 rounded-xl border border-border/60 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
-            <AlertTriangle className="w-5 h-5" />
+          <div className="relative overflow-hidden rounded-2xl p-6 border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300">
+            <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Needs Improvement</span>
+              <span className="text-lg font-black text-amber-600">{stats.needsImp}</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Needs Improvement</span>
-            <span className="text-lg font-black text-amber-600">{stats.needsImp}</span>
-          </div>
-        </div>
 
-        <div className="bg-card p-4 rounded-xl border border-border/60 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-200">
-            <XCircle className="w-5 h-5" />
+          <div className="relative overflow-hidden rounded-2xl p-6 border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300">
+            <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center shrink-0 border border-red-200">
+              <XCircle className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Not Eligible</span>
+              <span className="text-lg font-black text-red-600">{stats.notEligible}</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Not Eligible</span>
-            <span className="text-lg font-black text-red-600">{stats.notEligible}</span>
-          </div>
-        </div>
 
-        <div className="bg-card p-4 rounded-xl border border-border/60 flex items-center gap-3 shadow-sm">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
-            <Briefcase className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Ready Cohort Ratio</span>
-            <span className="text-lg font-black text-primary">{stats.readyRate}%</span>
+          <div className="relative overflow-hidden rounded-2xl p-6 border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+              <Briefcase className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wide block">Ready Cohort Ratio</span>
+              <span className="text-lg font-black text-primary">{stats.readyRate}%</span>
+            </div>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Tabs Menu */}
-      <div className="flex border-b text-xs font-bold text-muted-foreground select-none bg-card p-1 rounded-xl border border-border/60 gap-1">
-        <button 
-          onClick={() => setActiveTab("directory")}
-          className={cn("px-4 py-2 rounded-lg transition-all uppercase whitespace-nowrap", activeTab === "directory" ? "bg-primary text-white" : "hover:bg-muted hover:text-foreground")}
-        >
-          Eligibility Directory
-        </button>
-        <button 
-          onClick={() => setActiveTab("shortlist")}
-          className={cn("px-4 py-2 rounded-lg transition-all uppercase whitespace-nowrap", activeTab === "shortlist" ? "bg-primary text-white" : "hover:bg-muted hover:text-foreground")}
-        >
-          Placement Shortlist
-        </button>
-        {user?.role === "admin" && (
-          <button 
-            onClick={() => setActiveTab("rules")}
-            className={cn("px-4 py-2 rounded-lg transition-all uppercase whitespace-nowrap", activeTab === "rules" ? "bg-primary text-white" : "hover:bg-muted hover:text-foreground")}
+      <motion.div variants={itemVariants} initial="hidden" animate="show" style={{ transitionDelay: "0.2s" }}>
+        <div className="flex border-b text-xs font-bold text-muted-foreground select-none bg-card p-1 rounded-xl border border-border/60 gap-1">
+          <button
+            onClick={() => setActiveTab("directory")}
+            className={cn("px-4 py-2 rounded-lg transition-all uppercase whitespace-nowrap", activeTab === "directory" ? "bg-primary text-white" : "hover:bg-muted hover:text-foreground")}
           >
-            Threshold Rules
+            Eligibility Directory
           </button>
-        )}
-      </div>
+          <button
+            onClick={() => setActiveTab("shortlist")}
+            className={cn("px-4 py-2 rounded-lg transition-all uppercase whitespace-nowrap", activeTab === "shortlist" ? "bg-primary text-white" : "hover:bg-muted hover:text-foreground")}
+          >
+            Placement Shortlist
+          </button>
+          {user?.role === "admin" && (
+            <button
+              onClick={() => setActiveTab("rules")}
+              className={cn("px-4 py-2 rounded-lg transition-all uppercase whitespace-nowrap", activeTab === "rules" ? "bg-primary text-white" : "hover:bg-muted hover:text-foreground")}
+            >
+              Threshold Rules
+            </button>
+          )}
+        </div>
+      </motion.div>
 
       {/* Content views */}
-      <div className="space-y-4">
+      <motion.div variants={itemVariants} initial="hidden" animate="show" style={{ transitionDelay: "0.3s" }}>
+        <div className="space-y-4">
         {activeTab === "directory" && (
           <div className="bg-card border border-border/60 rounded-2xl shadow-sm p-5 space-y-4">
             {/* Toolbar */}
@@ -437,7 +447,7 @@ const Placement = () => {
                 <div className="flex flex-col gap-0.5">
                   <select className="bg-card border rounded-lg px-2.5 py-1.5 outline-none cursor-pointer h-9" value={deptFilter} onChange={e => setDeptFilter(e.target.value)}>
                     <option value="all">All Departments</option>
-                    {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                    {departments.map(d => <option key={String(d)} value={String(d)}>{String(d)}</option>)}
                   </select>
                 </div>
                 <div className="flex flex-col gap-0.5">
