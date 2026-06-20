@@ -44,32 +44,6 @@ const corsOptions = {
 };
 
 const app = express();
-const server = http.createServer(app);
-
-// Initialize automated scheduled tasks
-initCronJobs();
-
-const io = new Server(server, {
-  cors: {
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    methods: ["GET", "POST"],
-    credentials: true
-  }
-});
-app.set('io', io); // Accessible in controllers via req.app.get('io')
-
-io.on('connection', (socket) => {
-    console.log('Socket client connected:', socket.id);
-    socket.on('disconnect', () => {
-        console.log('Socket client disconnected:', socket.id);
-    });
-});
 
 app.use(helmet());
 app.use(cookieParser());
@@ -83,7 +57,7 @@ app.use('/api', async (req, res, next) => {
     if (req.path === '/' || req.path === '') {
         return next();
     }
-    
+
     const mongoose = require('mongoose');
     if (mongoose.connection.readyState !== 1) {
         // Fetch current public IP dynamically
@@ -105,7 +79,7 @@ app.use('/api', async (req, res, next) => {
         } catch (e) {
             // fallback
         }
-        
+
         return res.status(503).json({
             success: false,
             message: `Database connection is not ready. Please whitelist this machine's public IP: ${publicIP} in your MongoDB Atlas Network Access settings (or allow 0.0.0.0/0 to accept connections from any dynamic IP).`
@@ -131,27 +105,27 @@ app.get('/api/health', protect, admin, async (req, res) => {
         const User = require('./models/User');
         const RefreshToken = require('./models/RefreshToken');
         const AuditLog = require('./models/AuditLog');
-        
+
         // 1. Database status
         const dbStatus = mongoose.connection.readyState === 1 ? 'Connected' : 'Disconnected';
-        
+
         // 2. Total Users
         const totalUsers = await User.countDocuments({});
         const totalStudents = await require('./models/Student').countDocuments({});
         const totalFaculty = await User.countDocuments({ role: 'faculty' });
-        
+
         // 3. Active Sessions (refresh tokens)
         const activeSessions = await RefreshToken.countDocuments({ expiresAt: { $gt: new Date() } });
-        
+
         // 4. API Health & System usage
         const os = require('os');
         const totalMem = os.totalmem();
         const freeMem = os.freemem();
         const usedMem = totalMem - freeMem;
         const memoryUsage = `${Math.round(usedMem / (1024 * 1024))} MB / ${Math.round(totalMem / (1024 * 1024))} MB`;
-        
+
         const systemCpu = os.cpus().length;
-        
+
         // 5. Recent Errors / deletes
         const recentErrors = await AuditLog.find({ actionType: { $in: ['LOGIN_FAILED', 'DELETE', 'STUDENT_DELETED', 'ERROR'] } })
             .sort({ createdAt: -1 })
@@ -180,26 +154,55 @@ app.get('/api', (req, res) => {
 
 app.use(errorHandler);
 
-const path = require('path');
+// Socket.io and server initialization only for non-Vercel environments
+if (process.env.VERCEL !== '1') {
+    const path = require('path');
 
-const PORT = process.env.PORT || 5000;
+    const server = http.createServer(app);
 
-// Serve frontend static files
-app.use(express.static(path.join(__dirname, '../frontend/dist')));
-
-// Catch-all route to serve React app for internal routing
-app.use((req, res, next) => {
-  if (req.method === 'GET' && !req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
-  } else {
-    next();
-  }
-});
-
-if (require.main === module) {
-    server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    const io = new Server(server, {
+      cors: {
+        origin: (origin, callback) => {
+          if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+            callback(null, true);
+          } else {
+            callback(new Error('Not allowed by CORS'));
+          }
+        },
+        methods: ["GET", "POST"],
+        credentials: true
+      }
     });
-}
 
-module.exports = { app, server };
+    io.on('connection', (socket) => {
+        console.log('Socket client connected:', socket.id);
+        socket.on('disconnect', () => {
+            console.log('Socket client disconnected:', socket.id);
+        });
+    });
+
+    // Serve frontend static files
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+
+    // Catch-all route to serve React app for internal routing
+    app.use((req, res, next) => {
+      if (req.method === 'GET' && !req.path.startsWith('/api')) {
+        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+      } else {
+        next();
+      }
+    });
+
+    const PORT = process.env.PORT || 5000;
+
+    if (require.main === module) {
+        server.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    }
+
+    module.exports = { app, server };
+} else {
+    // Export the app for Vercel serverless functions
+    module.exports = app;
+}
