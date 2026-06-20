@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Search, Filter, Plus, User, Mail, Phone, BookOpen, AlertCircle, X,
   Hash, LayoutGrid, List, ChevronLeft, ChevronRight, Download, Upload,
-  MapPin, Calendar, Check, GraduationCap, Briefcase, Award, Clock, FileText, CheckCircle
+  MapPin, Calendar, Check, GraduationCap, Briefcase, Award, Clock, FileText, CheckCircle, ClipboardCheck
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
@@ -22,7 +22,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 20 } }
+  show: { opacity: 1, y: 0, transition: { stiffness: 300, damping: 20 } }
 };
 
 // CSV parsing helper
@@ -648,56 +648,58 @@ const Students = () => {
   return (
     <div className="space-y-6">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-border/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
-        <div className="relative z-10 space-y-1">
-          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Students Directory</h1>
-          <p className="text-xs text-muted-foreground font-medium">Manage academic profiles, performance records, and placement readiness.</p>
-        </div>
-        {user?.role === "admin" && (
-          <div className="flex flex-wrap gap-2.5 relative z-10">
-            <button 
-              onClick={() => { setCsvStep(1); setIsUploadModalOpen(true); }}
-              className="flex items-center gap-2 bg-card border border-border hover:bg-muted text-foreground px-4.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm"
-            >
-              <Upload className="w-4 h-4 text-primary" />
-              Spreadsheet Upload
-            </button>
-            <button 
-              onClick={() => { setEnrollStep(1); setIsEnrollModalOpen(true); }} 
-              className="flex items-center gap-2 bg-primary text-white px-4.5 py-2.5 rounded-xl text-xs font-bold hover:bg-primary/95 transition-all shadow-md shadow-primary/10 active:scale-95"
-            >
-              <Plus className="w-4 h-4" />
-              Enroll Student
-            </button>
+      <motion.div variants={itemVariants} initial="hidden" animate="show">
+        <div className="bg-gradient-to-r from-primary/5 via-accent/5 to-transparent p-6 rounded-2xl border border-border/50 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-[80px] pointer-events-none" />
+          <div className="relative z-10 space-y-1">
+            <h1 className="text-2xl font-extrabold tracking-tight text-foreground">Students Directory</h1>
+            <p className="text-xs text-muted-foreground font-medium">Manage academic profiles, performance records, and placement readiness.</p>
           </div>
-        )}
-      </div>
+          {user?.role === "admin" && (
+            <div className="flex flex-wrap gap-2.5 relative z-10">
+              <button
+                onClick={() => { setCsvStep(1); setIsUploadModalOpen(true); }}
+                className="flex items-center gap-2 bg-card border border-border hover:bg-muted text-foreground px-4.5 py-2.5 rounded-xl text-xs font-bold transition-all active:scale-95 shadow-sm"
+              >
+                <Upload className="w-4 h-4 text-primary" />
+                Spreadsheet Upload
+              </button>
+              <button
+                onClick={() => { setEnrollStep(1); setIsEnrollModalOpen(true); }}
+                className="flex items-center gap-2 bg-primary text-white px-4.5 py-2.5 rounded-xl text-xs font-bold hover:bg-primary/95 transition-all shadow-md shadow-primary/10 active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                Enroll Student
+              </button>
+            </div>
+          )}
+        </div>
+      </motion.div>
 
       {/* Directory Controls Panel */}
-      <div className="bg-card border border-border/60 p-4 rounded-2xl shadow-sm space-y-4">
+      <div className="relative overflow-hidden rounded-2xl p-6 border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300">
         {/* Toggle & Search */}
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <div className="relative w-full md:w-96">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
-            <Input 
-              placeholder="Search by student name or roll register number..." 
-              className="pl-10 h-10 bg-transparent border-border focus-visible:ring-primary text-xs font-semibold" 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
+            <Input
+              placeholder="Search by student name or roll register number..."
+              className="pl-10 h-10 bg-transparent border-border focus-visible:ring-primary text-xs font-semibold"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-          
+
           <div className="flex items-center gap-3 w-full md:w-auto shrink-0 justify-end">
             <div className="flex bg-muted/40 border p-1 rounded-xl gap-0.5">
-              <button 
+              <button
                 onClick={() => setViewMode("table")}
                 className={cn("p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-all", viewMode === "table" && "bg-card shadow-sm text-primary border border-border/10")}
                 title="Table View"
               >
                 <List className="w-4 h-4" />
               </button>
-              <button 
+              <button
                 onClick={() => setViewMode("grid")}
                 className={cn("p-1.5 rounded-lg text-muted-foreground hover:text-foreground transition-all", viewMode === "grid" && "bg-card shadow-sm text-primary border border-border/10")}
                 title="Grid View"
@@ -709,7 +711,8 @@ const Students = () => {
         </div>
 
         {/* Filters Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5 pt-2 border-t border-border/40 text-xs font-bold">
+        <div className="relative overflow-hidden rounded-2xl p-6 border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300 pt-2 border-t border-border/40 text-xs font-bold">
+          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-2.5">
           {/* Department Filter */}
           <div className="flex flex-col gap-1">
             <label className="text-[10px] text-muted-foreground uppercase">Dept</label>
@@ -800,16 +803,20 @@ const Students = () => {
 
       {/* Main Student list display */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-40 bg-card border rounded-2xl animate-pulse" />
-          ))}
-        </div>
+        <motion.div variants={itemVariants} initial="hidden" animate="show" style={{ transitionDelay: "0.1s" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-40 relative overflow-hidden rounded-2xl p-4 bg-card border border-border/60 shadow-[0_1px_3px_rgba(0,0,0,0.1),0_1px_2px_rgba(0,0,0,0.06)] hover:shadow-[0_4px_6px_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.08)] transition-all duration-300 animate-pulse" />
+            ))}
+          </div>
+        </motion.div>
       ) : filteredStudents.length === 0 ? (
-        <div className="py-24 text-center border border-dashed rounded-2xl bg-card border-border/80 flex flex-col items-center justify-center gap-3">
-          <AlertCircle className="w-8 h-8 text-muted-foreground" />
-          <p className="text-sm font-bold text-muted-foreground">No students match the current filters.</p>
-        </div>
+        <motion.div variants={itemVariants} initial="hidden" animate="show" style={{ transitionDelay: "0.1s" }}>
+          <div className="py-24 text-center border border-dashed rounded-2xl bg-card border-border/80 flex flex-col items-center justify-center gap-3">
+            <AlertCircle className="w-8 h-8 text-muted-foreground" />
+            <p className="text-sm font-bold text-muted-foreground">No students match the current filters.</p>
+          </div>
+        </motion.div>
       ) : viewMode === "grid" ? (
         
         // GRID VIEW CARD RENDER
