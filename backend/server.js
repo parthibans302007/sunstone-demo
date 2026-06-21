@@ -29,6 +29,11 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
+
+  // Vercel Frontend URLs
+  'https://sunstone-demo.vercel.app',
+  'https://sunstone-demo-mxmnqylyg-parthibans302007s-projects.vercel.app',
+
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
