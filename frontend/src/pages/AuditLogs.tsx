@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import { 
-  History, Search, Filter, ArrowDownToLine, RefreshCw, Calendar, 
-  User as UserIcon, ShieldAlert, ArrowLeftRight, ChevronLeft, ChevronRight 
+  History, Search, Filter, ArrowDownToLine, RefreshCw,
+  ShieldAlert, ArrowLeftRight, ChevronLeft, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 const MODULES = ["STUDENTS", "ATTENDANCE", "PLACEMENT", "REPORTS", "AUTH"];

@@ -1,8 +1,7 @@
 import { useParams } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { 
-  ArrowLeft, Mail, Phone, Award, TrendingDown, BookOpen, AlertTriangle, 
-  CheckCircle, HelpCircle, RefreshCw, Printer, Calendar 
+  ArrowLeft, Mail, Phone, Award, TrendingDown, AlertTriangle,
+  CheckCircle, HelpCircle, RefreshCw, Printer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import api from "@/lib/api";
@@ -22,12 +21,11 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 const StudentProfile = () => {
   const { id } = useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [student, setStudent] = useState<any>(null);

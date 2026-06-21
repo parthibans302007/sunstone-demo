@@ -2,7 +2,7 @@ import { useState } from "react";
 import { mockCorrectionRequests, CorrectionRequest } from "@/data/mockData";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Check, X, Clock, AlertTriangle, ShieldCheck, Inbox, MessageSquare } from "lucide-react";
+import { Check, X, Clock, Inbox, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,7 +17,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 const Corrections = () => {

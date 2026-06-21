@@ -634,6 +634,7 @@ const Placement = () => {
           </div>
         )}
       </div>
+      </motion.div>
     </div>
   );
 };

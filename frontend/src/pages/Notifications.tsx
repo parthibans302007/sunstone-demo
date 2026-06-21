@@ -2,16 +2,11 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import {
-  Bell, Check, RefreshCw, Trash2, Calendar,
+  Bell, Check, RefreshCw, Trash2,
   AlertTriangle, CheckCircle, Info, XCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
-};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -184,7 +179,7 @@ const Notifications = () => {
               </motion.div>
             ) : (
               <AnimatePresence initial={false}>
-                {filtered.map((n, index) => {
+                {filtered.map((n) => {
                   const styles = getAlertStyles(n.type);
                   const IconComp = styles.icon;
                   return (

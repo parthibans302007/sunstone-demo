@@ -20,7 +20,7 @@ const initCronJobs = require('./services/cronJobs');
 const { apiLimiter } = require('./middleware/rateLimiter');
 const errorHandler = require('./middleware/errorHandler');
 
-connectDB();
+const dbConnection = connectDB();
 
 const allowedOrigins = [
   'http://localhost:8080',
@@ -32,9 +32,13 @@ const allowedOrigins = [
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
+const isAllowedOrigin = (origin) => !origin
+  || allowedOrigins.includes(origin)
+  || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin);
+
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+    if (isAllowedOrigin(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -52,7 +56,7 @@ app.use(express.json());
 app.use('/api', apiLimiter);
 
 // Middleware to check database connection status
-app.use('/api', async (req, res, next) => {
+app.use('/api', (req, res, next) => {
     // Skip checking for the root status API
     if (req.path === '/' || req.path === '') {
         return next();
@@ -60,29 +64,9 @@ app.use('/api', async (req, res, next) => {
 
     const mongoose = require('mongoose');
     if (mongoose.connection.readyState !== 1) {
-        // Fetch current public IP dynamically
-        let publicIP = '157.50.15.71';
-        try {
-            const https = require('https');
-            publicIP = await new Promise((resolve, reject) => {
-                const apiReq = https.get('https://api.ipify.org', { timeout: 1000 }, (apiRes) => {
-                    let data = '';
-                    apiRes.on('data', (chunk) => data += chunk);
-                    apiRes.on('end', () => resolve(data.trim()));
-                });
-                apiReq.on('error', (err) => reject(err));
-                apiReq.on('timeout', () => {
-                    apiReq.destroy();
-                    reject(new Error('timeout'));
-                });
-            });
-        } catch (e) {
-            // fallback
-        }
-
         return res.status(503).json({
             success: false,
-            message: `Database connection is not ready. Please whitelist this machine's public IP: ${publicIP} in your MongoDB Atlas Network Access settings (or allow 0.0.0.0/0 to accept connections from any dynamic IP).`
+            message: 'Database connection is not ready. Check MONGODB_URI and database network access.'
         });
     }
     next();
@@ -163,7 +147,7 @@ if (process.env.VERCEL !== '1') {
     const io = new Server(server, {
       cors: {
         origin: (origin, callback) => {
-          if (!origin || allowedOrigins.some(o => origin.startsWith(o)) || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+          if (isAllowedOrigin(origin)) {
             callback(null, true);
           } else {
             callback(new Error('Not allowed by CORS'));
@@ -180,6 +164,7 @@ if (process.env.VERCEL !== '1') {
             console.log('Socket client disconnected:', socket.id);
         });
     });
+    app.set('io', io);
 
     // Remove static file serving and catch-all route for separate frontend deployment
     // app.use(express.static(path.join(__dirname, '../frontend/dist')));
@@ -194,8 +179,11 @@ if (process.env.VERCEL !== '1') {
     const PORT = process.env.PORT || 5000;
 
     if (require.main === module) {
-        server.listen(PORT, () => {
-            console.log(`Server running on port ${PORT}`);
+        dbConnection.then((connection) => {
+            if (connection) initCronJobs();
+            server.listen(PORT, () => {
+                console.log(`Server running on port ${PORT}`);
+            });
         });
     }
 

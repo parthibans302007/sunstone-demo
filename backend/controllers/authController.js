@@ -27,10 +27,11 @@ const generateRefreshToken = async (id) => {
 };
 
 const setRefreshTokenCookie = (res, token) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('refreshToken', token, {
         httpOnly: true,
-        sameSite: 'strict',
-        secure: process.env.NODE_ENV === 'production',
+        sameSite: isProduction ? 'none' : 'lax',
+        secure: isProduction,
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
     });
 };
@@ -38,6 +39,12 @@ const setRefreshTokenCookie = (res, token) => {
 const registerUser = async (req, res, next) => {
     const { name, email, password, role } = req.body;
     try {
+        if (!name || !email || !password) {
+            throw new ApiError(400, 'Name, email, and password are required');
+        }
+        if (password.length < 6) {
+            throw new ApiError(400, 'Password must be at least 6 characters');
+        }
         const userExists = await User.findOne({ email });
         if (userExists) {
             throw new ApiError(400, 'User already exists');
@@ -67,7 +74,10 @@ const registerUser = async (req, res, next) => {
 const loginUser = async (req, res, next) => {
     const { email, password } = req.body;
     try {
-        const user = await User.findOne({ email });
+        if (!email || !password) {
+            throw new ApiError(400, 'Email and password are required');
+        }
+        const user = await User.findOne({ email: email.trim().toLowerCase() });
         if (user && (await user.matchPassword(password))) {
             const accessToken = generateAccessToken(user._id);
             const refreshToken = await generateRefreshToken(user._id);
@@ -167,7 +177,7 @@ const logoutUser = async (req, res, next) => {
         // Clear refresh token cookie
         res.clearCookie('refreshToken', {
             httpOnly: true,
-            sameSite: 'strict',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             secure: process.env.NODE_ENV === 'production'
         });
 
@@ -180,6 +190,9 @@ const logoutUser = async (req, res, next) => {
 const changePassword = async (req, res, next) => {
     const { newPassword } = req.body;
     try {
+        if (!newPassword || newPassword.length < 6) {
+            throw new ApiError(400, 'Password must be at least 6 characters');
+        }
         const user = await User.findById(req.user._id);
         if (user) {
             user.password = newPassword;

@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 // Create an Axios instance with credentials enabled for secure cookie storage
 const api = axios.create({
@@ -21,9 +21,16 @@ api.interceptors.request.use(
 );
 
 let isRefreshing = false;
-let failedQueue: any[] = [];
+type QueueEntry = {
+  resolve: (token: string | null) => void;
+  reject: (error: unknown) => void;
+};
 
-const processQueue = (error: any, token: string | null = null) => {
+type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+let failedQueue: QueueEntry[] = [];
+
+const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
@@ -37,11 +44,11 @@ const processQueue = (error: any, token: string | null = null) => {
 // Response interceptor to handle errors globally (with transparent token refresh retry)
 api.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as RetryableRequestConfig | undefined;
     
     // Check if the response is unauthorized and hasn't already been retried
-    if (error.response && error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
       // Avoid infinite loop if refreshing fails
       if (originalRequest.url?.includes('/auth/refresh')) {
         return Promise.reject(error);

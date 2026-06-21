@@ -4,8 +4,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { 
-  Settings as SettingsIcon, Sliders, Sun, Moon, Laptop, 
-  Check, RefreshCw, GraduationCap, ShieldCheck
+  Sliders, Sun, Moon, Laptop,
+  Check, RefreshCw, ShieldCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

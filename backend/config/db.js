@@ -8,6 +8,7 @@ const connectDB = async () => {
             serverSelectionTimeoutMS: 2000
         });
         console.log(`MongoDB Connected (Atlas): ${conn.connection.host}`);
+        return conn;
     } catch (error) {
         console.log('Atlas connection failed. Trying local MongoDB...');
         try {
@@ -15,6 +16,7 @@ const connectDB = async () => {
                 serverSelectionTimeoutMS: 2000
             });
             console.log(`MongoDB Connected (Local): ${conn.connection.host}`);
+            return conn;
         } catch (localError) {
             console.error(`Error connecting to MongoDB Atlas: ${error.message}`);
             console.error(`Error connecting to local MongoDB: ${localError.message}`);
@@ -45,7 +47,7 @@ const connectDB = async () => {
             console.log(`👉 ${publicIP}`);
             console.log('in your MongoDB Atlas Network Security settings, or start local MongoDB.');
             console.log('========================================================================\n');
-            // process.exit(1);
+            return null;
         }
     }
 };

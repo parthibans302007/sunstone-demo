@@ -185,7 +185,7 @@ const Reports = () => {
   // Trigger report fetch when page, query, sort changes
   useEffect(() => {
     generateReport();
-  }, [currentPage, sortBy, sortOrder, groupBy]);
+  }, [generateReport]);
 
   // 6 Primary Category Card click handlers
   const handleCategoryClick = (category: string) => {
@@ -208,10 +208,6 @@ const Reports = () => {
       setSelectedFields(["name", "rollNumber", "course", "gpa", "attendancePercentage"]);
     }
     
-    // Auto execute query
-    setTimeout(() => {
-      generateReport();
-    }, 50);
   };
 
   // Presets templates management
@@ -449,7 +445,7 @@ const Reports = () => {
                     link.click();
                     document.body.removeChild(link);
                     toast.success("Attendance report downloaded successfully!");
-                  } catch (e) {
+                  } catch {
                     toast.error("Failed to generate attendance report");
                   }
                 }}
@@ -506,7 +502,7 @@ const Reports = () => {
                     link.click();
                     document.body.removeChild(link);
                     toast.success("Academic transcript downloaded successfully!");
-                  } catch (e) {
+                  } catch {
                     toast.error("Failed to generate transcript");
                   }
                 }}
@@ -561,7 +557,7 @@ const Reports = () => {
                     link.click();
                     document.body.removeChild(link);
                     toast.success("Readiness report downloaded successfully!");
-                  } catch (e) {
+                  } catch {
                     toast.error("Failed to generate placement readiness report");
                   }
                 }}

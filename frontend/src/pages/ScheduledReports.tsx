@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import api from "@/lib/api";
 import { 
   CalendarClock, Plus, Trash2, Pause, Play, Mail, Bell, Link as LinkIcon, 
-  RefreshCw, FileText, Check, AlertCircle, Users, CheckSquare 
+  RefreshCw, Check
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 
 const containerVariants = {
@@ -15,7 +16,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 const REPORT_TYPES = [

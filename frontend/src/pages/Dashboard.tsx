@@ -4,15 +4,15 @@ import { StatCard } from "@/components/StatCard";
 import { cn } from "@/lib/utils";
 import {
   Users, ClipboardCheck, AlertTriangle, TrendingUp, UserCheck,
-  Calendar, Sparkles, GraduationCap, ChevronRight, Briefcase,
-  FileText, Upload, Plus, Layers, ShieldAlert, Award, Settings, Activity
+  Calendar, Sparkles, GraduationCap, Briefcase,
+  FileText, Upload, Plus, Layers, Award, Settings, Activity
 } from "lucide-react";
 import api from "@/lib/api";
 import { socket } from "@/lib/socket";
 import { toast } from "sonner";
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, LineChart, Line, Legend
+  ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, Legend
 } from "recharts";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -26,7 +26,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 const AdminFacultyDashboard = () => {
@@ -540,7 +540,7 @@ const StudentDashboard = () => {
       await api.put(`/notifications/${id}/read`);
       toast.success("Notification marked as read");
       fetchStudentDashboard();
-    } catch (e) {
+    } catch {
       toast.error("Failed to update notification");
     }
   };

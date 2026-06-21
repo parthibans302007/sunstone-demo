@@ -2,18 +2,15 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
 import { 
-  GraduationCap, Award, AlertTriangle, TrendingUp, 
-  RefreshCw, ClipboardCheck, Users, Percent, BookOpen
+  GraduationCap, Award, AlertTriangle,
+  RefreshCw, Percent, BookOpen
 } from "lucide-react";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
-  Legend, ResponsiveContainer, LineChart, Line 
+  ResponsiveContainer, LineChart, Line
 } from "recharts";
-import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-
-const COLORS = ["#2563EB", "#16A34A", "#F59E0B", "#DC2626", "#8B5CF6"];
 
 const StudentPerformance = ({ student }: { student: any }) => {
   if (!student) {

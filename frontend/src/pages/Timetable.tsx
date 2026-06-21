@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { CalendarRange, Sparkles, Calendar, BookOpen, Clock, MapPin } from "lucide-react";
+import { CalendarRange, Calendar, Clock, MapPin } from "lucide-react";
 import { motion } from "framer-motion";
 
 const timetable = [
@@ -33,7 +33,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 12 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 const Timetable = () => (

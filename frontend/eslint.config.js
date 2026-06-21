@@ -19,8 +19,12 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
-      "@typescript-eslint/no-unused-vars": "off",
+      // API records are progressively typed page-by-page; TypeScript's strict
+      // compiler remains the source of truth while legacy payloads are migrated.
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_", varsIgnorePattern: "^_" }],
+      // shadcn modules intentionally co-locate components and variant helpers.
+      "react-refresh/only-export-components": "off",
     },
   },
 );

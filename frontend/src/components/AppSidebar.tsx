@@ -3,8 +3,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "next-themes";
 import {
-  LayoutDashboard, Users, ClipboardCheck, FileText, Calendar,
-  Bell, Settings, LogOut, GraduationCap, UserCheck, AlertTriangle,
+  LayoutDashboard, Users, ClipboardCheck, FileText,
+  Bell, Settings, LogOut, GraduationCap,
   ChevronLeft, ChevronRight, Sun, Moon, Laptop, Briefcase, TrendingUp,
   History, CalendarClock, Activity
 } from "lucide-react";

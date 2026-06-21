@@ -3,7 +3,7 @@ import api from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { 
   Activity, Server, Database, Users, HardDrive, ShieldAlert, 
-  RefreshCw, Cpu, Clock, CheckCircle2, AlertTriangle, ArrowRight 
+  RefreshCw, Cpu, Clock, CheckCircle2, AlertTriangle
 } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -16,7 +16,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 15 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 100, damping: 15 } }
 };
 
 export default function SystemHealth() {

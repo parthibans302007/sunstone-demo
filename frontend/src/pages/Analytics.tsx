@@ -1,10 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import api from "@/lib/api";
 import { toast } from "sonner";
-import {
-  TrendingUp, BarChart as ChartIcon, Layers, Calendar,
-  RefreshCw, ClipboardCheck, GraduationCap, Briefcase, Award
-} from "lucide-react";
+import { Layers, RefreshCw } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   Legend, ResponsiveContainer, LineChart, Line
@@ -12,21 +9,14 @@ import {
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
-const COLORS = ["#2563EB", "#0F172A", "#16A34A", "#F59E0B", "#DC2626", "#8B5CF6"];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.05 } }
-};
-
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 20 } }
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 20 } }
 };
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
-  const [students, setStudents] = useState<any[]>([]);
+  const [, setStudents] = useState<any[]>([]);
   const [placementStudents, setPlacementStudents] = useState<any[]>([]);
 
   const fetchData = useCallback(async () => {

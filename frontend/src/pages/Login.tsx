@@ -76,32 +76,14 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Feature Copy */}
+        {/* Welcome Message */}
         <div className="relative z-10 flex-1 flex-col justify-center max-w-lg space-y-6">
-          <h1 className="text-4xl font-extrabold tracking-tight leading-tight lg:text-5xl">
-            The intelligent operating system for modern campuses.
+          <h1 className="text-3xl font-extrabold tracking-tight leading-tight lg:text-4xl">
+            Welcome to Sunstone Management System
           </h1>
           <p className="text-white/80 text-base leading-relaxed">
-            Streamlining attendance workflows, real-time student monitoring, and academic progress tracking in one unified workspace.
+            Comprehensive college management platform for administrators, faculty, and students.
           </p>
-
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-2 gap-6 pt-6 border-t border-white/10">
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-[#ff6b00]">99.8%</p>
-              <p className="text-xs text-white/60 font-semibold uppercase tracking-wider">Sync Uptime</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-2xl font-bold text-[#ff6b00]">&lt; 2s</p>
-              <p className="text-xs text-white/60 font-semibold uppercase tracking-wider">Live Update Latency</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer info */}
-        <div className="relative z-10 flex items-center justify-between text-xs text-white/50">
-          <span>Enterprise Campus Portal</span>
-          <span>Version 2.4.0</span>
         </div>
       </div>
 
@@ -118,13 +100,12 @@ const Login = () => {
               <GraduationCap className="w-7 h-7 text-white" />
             </div>
             <h1 className="text-2xl font-bold tracking-tight">Sunstone Management</h1>
-            <p className="text-xs text-muted-foreground mt-1">College Management Portal</p>
           </div>
 
           {/* Header */}
           <div className="text-center md:text-left space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Welcome back</h2>
-            <p className="text-muted-foreground text-sm">Enter your credentials below to log into your account.</p>
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">Sign In</h2>
+            <p className="text-muted-foreground text-sm">Enter your credentials to access your account</p>
           </div>
 
           {/* Error message */}
@@ -196,7 +177,7 @@ const Login = () => {
             >
               {isLoading ? (
                 <>
-                  <span className="mr-2">Logging in...</span>
+                  <span className="mr-2">Signing in...</span>
                   <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
                 </>
               ) : (
